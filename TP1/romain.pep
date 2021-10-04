@@ -1,6 +1,7 @@
 ;A,T 29.09 
 ;(C) GG 2021 
-;TP1
+;TP1 Par Samuel Dextraze DEXS03039604 dextraze.samuel@courrier.uqam.ca 
+; et Christophe Cloutier
 
          lda 0,i; 
          ldx 0,i;
@@ -134,7 +135,6 @@ print20:stro XX,d;
          br loop;
 print10:stro X,d;
          br loop;
-
 
 
 unit:    suba unite,d;
