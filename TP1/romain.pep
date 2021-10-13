@@ -1,30 +1,30 @@
 ;A,T 29.09 
 ;(C) GG 2021 
 ;TP1 Par Samuel Dextraze DEXS03039604 dextraze.samuel@courrier.uqam.ca 
-; et Christophe Cloutier
+; et Christophe Cloutier CLOC21119501 cloutier.christophe@courrier.uqam.ca
 
-         lda 0,i; 
-         ldx 0,i;
-         stro msg,d;
-         deci number,d;
-         lda number,d; A=number
-         suba highlim,d;A=number-3999
-         brgt toohigh;
-         lda number,d;
-         brle toolow;
+         lda 0,i;            a = 0
+         ldx 0,i;            x = 0
+         stro msg,d;         Print(msg)
+         deci number,d;      
+         lda number,d;       a = number
+         suba highlim,d;     a = number-3999
+         brgt toohigh;       if (a > 0) throws toohigh 
+         lda number,d;       a = number
+         brle toolow;        if (a < 1) throws toolow
 
-loop:    ldx 0,i; 
-         sta number,d;
-         lda number,d;
-         cpa millier,d;
-         brge mille;
+loop:    ldx 0,i;            do { x = 0
+         sta number,d;            number = a
+         lda number,d;            a = number
+         cpa millier,d;           
+         brge mille;              if (a >= millier) branch au traitement des milliers
          cpa centaine,d;
-         brge cent;
+         brge cent;               if (a >= centaine) branch au traitement des centaines
          cpa dixaine,d;
-         brge dix;
+         brge dix;                if (a >= dixaine) branch au traitement des dizaines
          cpa unite,d;
-         brge unit;
-         br exit;
+         brge unit;               if (a >= unit) branch au traitement des unites
+         br exit;            } while (number > 0)
 
 mille:   suba millier,d;
          addx unite,d;
