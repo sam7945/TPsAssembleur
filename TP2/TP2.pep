@@ -71,7 +71,7 @@ affint:  lda     tabint,d;
 loopaffi:cpx     sizetab,d; 
          brge    affinint;
          charo   tabint,x;
-         addx    1,i;
+         addx    2,i;
          br      loopaffi;
 affinint:charo   '\n',i; 
          ret0;
@@ -88,15 +88,28 @@ affinint:charo   '\n',i;
 ;******************** SOUS METHODE convInt ******************************
 ;************************************************************************
 
-convint: ldbytea chaine,x;
+
+convint: ldx     0,i;
+loopconv:ldbytea chiffre,d;
+         adda    chaine,x;
          suba    '0',i;
-         ldx     sizeint,d;
-         cpx     1,i;
-         breq    finconv;
-         
-         
-finconv: stbytea chiffre,d;
-         ret0
+         cpx     sizeint,d;
+         brlt    x10;
+         br      finconv;
+
+x10:     sta tempchif,d; 
+         asla
+         asla
+         adda tempchif,d
+         asla 
+         stbytea chiffre,d
+         addx 2,i;
+         br loopconv
+
+
+finconv: sta chiffre,d
+         deco chiffre,d
+         stop
 
 
 ;************************************************************************
@@ -113,9 +126,10 @@ size:    .equate 300;
 tabint:  .block  300; 
 sizetab: .word   0;
 
-chaine:  .block  5;Tableau de chaine de string du chiffre
-sizeint: .word   0;Grosseur du tableau populer
+chaine:  .block  10;Tableau de chaine de string du chiffre, 2 par chiffre
+sizeint: .word   0;Grosseur du tableau populer, doit être de (nb de digits*2)-2
 chiffre: .word   0;Chiffre en int de retour
+tempchif:.word   0;Nombre temporaire pour la conversion
 
 len:     .word   0;
 temp:    .block  1;
