@@ -89,9 +89,10 @@ affinint:charo   '\n',i;
 
 
 nombre:  cpa     '0',i
-         brlt    
+         brlt    ;ERROR: Operand specifier expected after mnemonic.
          cpa     '9',i
          brgt    
+         ret0
 
 
 ;************************************************************************
