@@ -107,6 +107,8 @@ nombre:  cpa     '0',i
 
 
 convint: ldx     0,i;
+         lda     0,i;
+         sta     chiffre,d;
 loopconv:ldbytea chiffre,d;
          adda    chaine,x;
          suba    '0',i;
@@ -125,8 +127,7 @@ x10:     sta tempchif,d;
 
 
 finconv: sta chiffre,d
-         deco chiffre,d
-         stop
+         ret0;
 
 
 ;************************************************************************
