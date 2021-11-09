@@ -5,6 +5,7 @@
 
          call    Saisir
          call    afftexte
+         ;call    extrints
          ;call    affint
 
          STOP
@@ -51,13 +52,13 @@ fin:     stx     len,d
 
 extrints:lda     0,i;
          ldx     0,i;
-loop1:   ;if (tempchai > 0) {branch a convertir le tableau chaine en int + nettoyer variable tempchai} ;ERROR: Must have mnemonic or dot command after symbol definition.
-loop3:   ldx     tempbuff    ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer)
+loop1:  nop0 ;if (tempchai > 0) {branch a convertir le tableau chaine en int + nettoyer variable tempchai} 
+loop3:   ldx     tempbuff,d    ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer) 
          cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
          brgt    fin         ;si nous sommes a l'exterieur du tableau buffer, branch a fin
          ldbytea buffer,x    ;load la valeur du premier element du buffer dans a
          addx    1,i         ;incremente la position dans le tableau buffer de 1
-         stx     tempbuff    ;range la valeur de x (position tableau buffer) dans la variable tempbuff
+         stx     tempbuff,d    ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
          ldx     0,i         ;nettoye le registre x
          call    nombre      ;verifie si le caractere se situe entre 0 et 9
          ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
@@ -66,6 +67,8 @@ loop3:   ldx     tempbuff    ;load la valeur de la variable tempbuff dans le reg
          cpx     10,i        ;verifie si on deborde du tableau chaine
          brgt    fin         ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
          ldx     0,i    
+
+
 
 
 
@@ -122,9 +125,9 @@ affinint:charo   '\n',i;
 
 
 nombre:  cpa     '0',i
-         brlt    loop1
+         ;brlt     
          cpa     '9',i
-         brgt    loop1
+         ;brgt    
          ret0
 
 
@@ -182,12 +185,13 @@ sizeint: .word   0;Grosseur du tableau populer, doit être de (nb de digits*2)-2
 chiffre: .word   0;Chiffre en int de retour
 tempchif:.word   0;Nombre temporaire pour la conversion
 
+tempbuff:.word 0;
+tempchai:.word 0;
+
 len:     .word   0;
 temp:    .block  1;
 temp2:   .word   0;
 err:     .ASCII  "Erreur : Débordement de capacité\x00"
-tempbuff:.word   0;
-tempchai:.word   0;
 
 
 
