@@ -43,6 +43,39 @@ fin:     stx     len,d
 ;********************   METHODE SAISIR   ********************************
 ;************************************************************************
 
+
+
+;************************************************************************
+;********************   METHODE extrInts  ********************************
+;************************************************************************
+
+extrints:lda     0,i;
+         ldx     0,i;
+loop1:   ;if (tempchai > 0) {branch a convertir le tableau chaine en int + nettoyer variable tempchai}
+loop3:   ldx     tempbuff    ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer)
+         cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
+         brgt    fin         ;si nous sommes a l'exterieur du tableau buffer, branch a fin
+         ldbytea buffer,x    ;load la valeur du premier element du buffer dans a
+         addx    1,i         ;incremente la position dans le tableau buffer de 1
+         stx     tempbuff    ;range la valeur de x (position tableau buffer) dans la variable tempbuff
+         ldx     0,i         ;nettoye le registre x
+         call    nombre      ;verifie si le caractere se situe entre 0 et 9
+         ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
+         sta     chaine,x    ;range la valeur dans le tableau string
+         addx    2,i         ;ajoute x pour incrementer le tableau string
+         cpx     10,i        ;verifie si on deborde du tableau chaine
+         brgt    fin         ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
+         ldx     0,i    
+
+
+
+
+;************************************************************************
+;********************   METHODE extrInts  ********************************
+;************************************************************************
+
+
+
 ;************************************************************************
 ;********************  METHODE afftexte *********************************
 ;************************************************************************
