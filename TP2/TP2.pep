@@ -52,8 +52,12 @@ fin:     stx     len,d
 
 extrints:lda     0,i;
          ldx     0,i;
-loop1:  nop0 ;if (tempchai > 0) {branch a convertir le tableau chaine en int + nettoyer variable tempchai} 
-loop3:   ldx     tempbuff,d    ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer) 
+loop1:   ldx     tempchai,d  ;load la variable tempchai (si tempchai = 0, il n'y a pas de valeur dans le tableau chaine) dans x
+         cpx     0,i         ;compare la variable tempchai a 0.
+         brgt    convint     ;si tempchai > 0, branch a la methode convint (??? comment call la methode ici)
+         ldx     0,i         ;nettoye la variable x
+         stx     tempchai,d  ;remet la variable tempchai a 0.
+loop3:   ldx     tempbuff,d  ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer) 
          cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
          brgt    fin         ;si nous sommes a l'exterieur du tableau buffer, branch a fin
          ldbytea buffer,x    ;load la valeur du premier element du buffer dans a
