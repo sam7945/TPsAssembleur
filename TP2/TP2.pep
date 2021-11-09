@@ -51,7 +51,7 @@ fin:     stx     len,d
 
 extrints:lda     0,i;
          ldx     0,i;
-loop1:   ;if (tempchai > 0) {branch a convertir le tableau chaine en int + nettoyer variable tempchai}
+loop1:   ;if (tempchai > 0) {branch a convertir le tableau chaine en int + nettoyer variable tempchai} ;ERROR: Must have mnemonic or dot command after symbol definition.
 loop3:   ldx     tempbuff    ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer)
          cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
          brgt    fin         ;si nous sommes a l'exterieur du tableau buffer, branch a fin
@@ -122,9 +122,9 @@ affinint:charo   '\n',i;
 
 
 nombre:  cpa     '0',i
-         brlt    ;ERROR: Operand specifier expected after mnemonic.
+         brlt    loop1
          cpa     '9',i
-         brgt    
+         brgt    loop1
          ret0
 
 
@@ -186,6 +186,8 @@ len:     .word   0;
 temp:    .block  1;
 temp2:   .word   0;
 err:     .ASCII  "Erreur : Débordement de capacité\x00"
+tempbuff:.word   0;
+tempchai:.word   0;
 
 
 
