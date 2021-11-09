@@ -62,7 +62,7 @@ loop3:   ldx     tempbuff,d  ;load la valeur de la variable tempbuff dans le reg
          brgt    fin         ;si nous sommes a l'exterieur du tableau buffer, branch a fin
          ldbytea buffer,x    ;load la valeur du premier element du buffer dans a
          addx    1,i         ;incremente la position dans le tableau buffer de 1
-         stx     tempbuff,d    ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
+         stx     tempbuff,d  ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
          ldx     0,i         ;nettoye le registre x
          call    nombre      ;verifie si le caractere se situe entre 0 et 9
          ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
@@ -70,7 +70,9 @@ loop3:   ldx     tempbuff,d  ;load la valeur de la variable tempbuff dans le reg
          addx    2,i         ;ajoute x pour incrementer le tableau string
          cpx     10,i        ;verifie si on deborde du tableau chaine
          brgt    fin         ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
-         ldx     0,i    
+         stx     tempchai,d  ;store la valeur du x (position du tableau) dans la variable tempchai
+         ldx     0,i         ;nettoye le registre x
+         br      loop3       ;branche a loop3
 
 
 
@@ -129,9 +131,9 @@ affinint:charo   '\n',i;
 
 
 nombre:  cpa     '0',i
-         ;brlt     
+         brlt    loop1  
          cpa     '9',i
-         ;brgt    
+         brgt    loop1    
          ret0
 
 
