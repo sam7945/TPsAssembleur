@@ -65,17 +65,19 @@ loop3:   lda     0,i
          call    nombre      ;verifie si le caractere se situe entre 0 et 9
          
 caschiff:ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
-         sta     chaine,x    ;range la valeur dans le tableau string
          addx    2,i         ;ajoute x pour incrementer le tableau string
-         cpx     10,i        ;verifie si on deborde du tableau chaine
-         brgt    fin         ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
          stx     tempchai,d  ;store la valeur du x (position du tableau) dans la variable tempchai
+         cpx     8,i         ;verifie si on deborde du tableau chaine
+         brgt    loop3       ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
          subx    2,i
+         sta     chaine,x
          stx     sizeint,d
          ldx     0,i         ;nettoye le registre x
          br      loop3       ;branche a loop3
 
 caslett: ldx     tempchai,d
+         cpx     8,i
+         brgt    nettab
          cpx     0,i
          brgt    ajout
          br      loop3
@@ -93,6 +95,15 @@ affect:  ldx     sizetab,d
          sta     tabint,x
          addx    2,i
          stx     sizetab,d
+         br      loop3
+
+nettab:  ldx     0,i
+         lda     0,i
+nettab1: sta     chaine,x
+         addx    2,i
+         cpx     8,i
+         brle    nettab1
+         sta     tempchai,d
          br      loop3
 
 
