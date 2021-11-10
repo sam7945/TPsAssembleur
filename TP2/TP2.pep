@@ -1,12 +1,12 @@
-;27.10.2021
+ ;27.10.2021
 ;(C) INF2171 2021
 ;TP Par Samuel Dextraze DEXS03039604 dextraze.samuel@courrier.uqam.ca 
 ; et Christophe Cloutier CLOC21119501 cloutier.christophe@courrier.uqam.ca
 
          call    Saisir
          call    afftexte
-         ;call    extrints
-         ;call    affint
+         call    extrints
+         call    affint
 
          STOP
 
@@ -27,7 +27,7 @@ tts:     stbytea buffer,x    ;Si non store le byte dans buffer a l'indice x
          br      loop        ;Si non branch a loop
 
 test:    stbytea buffer,x    ;même si la valeur suivante est probablement un autre '\n', il faut quand même l'inséré au cas ou ce n'est qu'un saut de ligne
-         addx    1,i
+         ;addx    1,i
          chari   temp2,d     ;demande le prochain byte et l'assigne a la variable temp2 
          ldbytea temp2,d     ;load la variable temp2 dans le registre a.
          cpa     '\n',i      ;compare temp2 a "\n"
@@ -52,27 +52,45 @@ fin:     stx     len,d
 
 extrints:lda     0,i;
          ldx     0,i;
-loop1:   ldx     tempchai,d  ;load la variable tempchai (si tempchai = 0, il n'y a pas de valeur dans le tableau chaine) dans x
-         cpx     0,i         ;compare la variable tempchai a 0.
-         brgt    convint     ;si tempchai > 0, branch a la methode convint (??? comment call la methode ici)
-         ldx     0,i         ;nettoye la variable x
-         stx     tempchai,d  ;remet la variable tempchai a 0.
+
 loop3:   ldx     tempbuff,d  ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer) 
          cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
-         brgt    fin         ;si nous sommes a l'exterieur du tableau buffer, branch a fin
+         brge    extr        ;si nous sommes a l'exterieur du tableau buffer, branch a fin
          ldbytea buffer,x    ;load la valeur du premier element du buffer dans a (LA METHODE SE FINI ICI)
          addx    1,i         ;incremente la position dans le tableau buffer de 1
          stx     tempbuff,d  ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
          ldx     0,i         ;nettoye le registre x
+         
          call    nombre      ;verifie si le caractere se situe entre 0 et 9
-         ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
+         
+caschiff:ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
          sta     chaine,x    ;range la valeur dans le tableau string
          addx    2,i         ;ajoute x pour incrementer le tableau string
          cpx     10,i        ;verifie si on deborde du tableau chaine
          brgt    fin         ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
          stx     tempchai,d  ;store la valeur du x (position du tableau) dans la variable tempchai
+         subx    2,i
+         stx     sizeint,d
          ldx     0,i         ;nettoye le registre x
          br      loop3       ;branche a loop3
+
+caslett: ldx     tempchai,d
+         cpx     0,i
+         brgt    ajout
+         br      loop3
+
+ajout:   call    convint
+         lda     0,i;
+         lda     chiffre,d
+         cpa     32767,i;
+         brle    affect    
+         br      loop3;
+
+affect:  ldx     sizetab,d
+         sta     tabint,x
+         addx    2,i
+         stx     sizetab,d
+         br      loop3
 
 
 
@@ -112,7 +130,7 @@ affint:  lda     tabint,d;
          ldx     0,i;
 loopaffi:cpx     sizetab,d; 
          brge    affinint;
-         charo   tabint,x;
+         deco   tabint,x;
          addx    2,i;
          br      loopaffi;
 affinint:charo   '\n',i; 
@@ -131,9 +149,10 @@ affinint:charo   '\n',i;
 
 
 nombre:  cpa     '0',i
-         brlt    loop1  
+         brlt    caslett  
          cpa     '9',i
-         brgt    loop1    
+         brgt    caslett
+         br      caschiff   
          ret0
 
 
@@ -169,6 +188,8 @@ x10:     sta tempchif,d;
 
 
 finconv: sta chiffre,d
+         ldx     0,i
+         stx     tempchai,d;
          ret0;
 
 
