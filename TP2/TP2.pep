@@ -22,7 +22,7 @@ loop:    chari   temp,d      ;Prend le premier caractere et l'assigne a temp
          breq    test        ;Si c'est "\n" branch a test
 tts:     stbytea buffer,x    ;Si non store le byte dans buffer a l'indice x
          addx    1,i         ;Ajoute 1 a x (prochaine case du tableau)
-         cpx     size,d      ;Compare cette valeur a la longueur max du tableau (300)
+         cpx     size,i      ;Compare cette valeur a la longueur max du tableau (300)
          breq    mess        ;Si len == size (300) branch a mess (message d'erreur)
          br      loop        ;Si non branch a loop
 
@@ -217,7 +217,7 @@ finconv: sta chiffre,d
 
 
 buffer:  .block  300;
-size:    .word   300;
+size:    .equate   300;
 
 tabint:  .block  300; 
 sizetab: .word   0;
