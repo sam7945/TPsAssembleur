@@ -6,7 +6,7 @@
          call    Saisir
          call    afftexte
          call    extrints
-extr:    call    affint
+         call    affint
 
          STOP
 
@@ -57,7 +57,7 @@ extrints:lda     0,i;
 loop3:   lda     0,i
          ldx     tempbuff,d  ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer) 
          cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
-         brge    extr        ;si nous sommes a l'exterieur du tableau buffer, branch a fin 
+         brge    fin5        ;si nous sommes a l'exterieur du tableau buffer, branch a fin 
          ldbytea buffer,x    ;load la valeur du premier element du buffer dans a (LA METHODE SE FINI ICI)
          addx    1,i         ;incremente la position dans le tableau buffer de 1
          stx     tempbuff,d  ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
@@ -107,7 +107,7 @@ nettab1: sta     chaine,x
          sta     tempchai,d
          br      loop3
 
-
+fin5:    ret0
 
 
 
