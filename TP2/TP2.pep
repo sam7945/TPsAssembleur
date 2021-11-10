@@ -23,7 +23,7 @@ loop:    chari   temp,d      ;Prend le premier caractere et l'assigne a temp
 tts:     stbytea buffer,x    ;Si non store le byte dans buffer a l'indice x
          addx    1,i         ;Ajoute 1 a x (prochaine case du tableau)
          cpx     size,d      ;Compare cette valeur a la longueur max du tableau (300)
-         breq    mess        ;Si len == size (300) branch a mess (message d'erreur)
+         brge    mess        ;Si len == size (300) branch a mess (message d'erreur)
          br      loop        ;Si non branch a loop
 
 test:    stbytea buffer,x    ;même si la valeur suivante est probablement un autre '\n', il faut quand même l'inséré au cas ou ce n'est qu'un saut de ligne
@@ -34,6 +34,7 @@ test:    stbytea buffer,x    ;même si la valeur suivante est probablement un aut
          breq    fin       ;Si temp2 est un "\n" print le tableau (a modifier pour le projet final)
          br      tts         ;Si non on continue lexecution du programme
 mess:    stro    err,d       ;Message d'erreur si debordement
+         stop
 fin:     stx     len,d
          ret0
 
