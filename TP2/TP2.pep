@@ -10,41 +10,38 @@
 
          STOP
 
-;************************************************************************
-;********************   METHODE SAISIR   ********************************
-;************************************************************************
+;
+; Saisir: Stocker le texte saisi par l'utilisateur dans
+;         un tampon buffer de 300 octets. Si le texte est
+;         plus de 300 octets, un message d'erreur s'affiche
+;         et le programme s'arrete.
+; Passage des arguments et des résultats par variables globales.
+; IN:
+; OUT: len = longueur du tampon buffer
 
-Saisir:  lda     0,i         ;Nettoye le registre a 0 pour analysé la variable 
-         ldx     0,i         ;Nettoye le registre a 0 pour COMPTER
-         stro    soll,d
-loop:    chari   temp,d      ;Prend le premier caractere et l'assigne a temp
-         ldbytea temp,d      ;met la variable contenant le caractère dans le registre a
-         cpa     '\n',i      ;Compare a "\n"
-         breq    test        ;Si c'est "\n" branch a test
-tts:     stbytea buffer,x    ;Si non store le byte dans buffer a l'indice x
-         addx    1,i         ;Ajoute 1 a x (prochaine case du tableau)
-         cpx     size,i      ;Compare cette valeur a la longueur max du tableau (300)
-         breq    mess        ;Si len == size (300) branch a mess (message d'erreur)
-         br      loop        ;Si non branch a loop
-
-test:    stbytea buffer,x    ;même si la valeur suivante est probablement un autre '\n', il faut quand même l'inséré au cas ou ce n'est qu'un saut de ligne
-         addx    1,i
-         chari   temp2,d     ;demande le prochain byte et l'assigne a la variable temp2 
-         ldbytea temp2,d     ;load la variable temp2 dans le registre a.
-         cpa     '\n',i      ;compare temp2 a "\n"
-         breq    fin       ;Si temp2 est un "\n" print le tableau (a modifier pour le projet final)
-         br      tts         ;Si non on continue lexecution du programme
-mess:    stro    err,d       ;Message d'erreur si debordement
-         stop
-fin:     stx     len,d
+Saisir:  lda     0,i         ;Nettoye le registre A
+         ldx     0,i         ;Nettoye le registre X
+         stro    soll,d      ;Affiche le message de sollicitation
+loop:    chari   temp,d      ;Prend le prochain caractere et l'assigne a temp
+         ldbytea temp,d      ;Load la variable contenant le caractère dans le registre A
+         cpa     '\n',i      ; if ( A == '\n' ) {
+         breq    test        ;    branch a "test"
+tts:     stbytea buffer,x    ; } else { buffer[x] = A }
+         addx    1,i         ; X += 1
+         cpx     size,i      ; if ( X == size(300) ) {
+         breq    mess        ;    branch a "mess"
+         br      loop        ; } else { branch a "loop" } 
+test:    stbytea buffer,x    ; buffer[x] = A
+         addx    1,i         ; X += 1
+         chari   temp2,d     ;Demande le prochain byte et l'assigne a la variable temp2 
+         ldbytea temp2,d     ; A = temp2
+         cpa     '\n',i      ; if ( A == '\n' ) {
+         breq    fin         ;    branch a "fin"
+         br      tts         ; } else { branch a "tts" }
+mess:    stro    err,d       ;Affiche le message d'erreur de debordement
+         stop                ;Fin du programme
+fin:     stx     len,d       ; len = X
          ret0
-
-
-
-
-;************************************************************************
-;********************   METHODE SAISIR   ********************************
-;************************************************************************
 
 
 
@@ -63,7 +60,6 @@ loop3:   lda     0,i
          addx    1,i         ;incremente la position dans le tableau buffer de 1
          stx     tempbuff,d  ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
          ldx     0,i         ;nettoye le registre x
-         
          call    nombre      ;verifie si le caractere se situe entre 0 et 9
          
 caschiff:ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
@@ -89,8 +85,6 @@ ajout:   call    convint
          lda     chiffre,d
          cpa     0,i
          brge    affect
-         cpa     32767,i;
-         brgt    loop3
          br      loop3;
 
 affect:  ldx     sizetab,d
