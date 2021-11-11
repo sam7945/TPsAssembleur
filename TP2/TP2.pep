@@ -16,6 +16,7 @@
 
 Saisir:  lda     0,i         ;Nettoye le registre a 0 pour analysé la variable 
          ldx     0,i         ;Nettoye le registre a 0 pour COMPTER
+         stro    soll,d
 loop:    chari   temp,d      ;Prend le premier caractere et l'assigne a temp
          ldbytea temp,d      ;met la variable contenant le caractère dans le registre a
          cpa     '\n',i      ;Compare a "\n"
@@ -27,7 +28,7 @@ tts:     stbytea buffer,x    ;Si non store le byte dans buffer a l'indice x
          br      loop        ;Si non branch a loop
 
 test:    stbytea buffer,x    ;même si la valeur suivante est probablement un autre '\n', il faut quand même l'inséré au cas ou ce n'est qu'un saut de ligne
-         ;addx    1,i
+         addx    1,i
          chari   temp2,d     ;demande le prochain byte et l'assigne a la variable temp2 
          ldbytea temp2,d     ;load la variable temp2 dans le registre a.
          cpa     '\n',i      ;compare temp2 a "\n"
@@ -68,7 +69,7 @@ loop3:   lda     0,i
 caschiff:ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
          addx    2,i         ;ajoute x pour incrementer le tableau string
          stx     tempchai,d  ;store la valeur du x (position du tableau) dans la variable tempchai
-         cpx     8,i         ;verifie si on deborde du tableau chaine
+         cpx     10,i        ;verifie si on deborde du tableau chaine
          brgt    loop3       ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
          subx    2,i
          sta     chaine,x
@@ -77,7 +78,7 @@ caschiff:ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dan
          br      loop3       ;branche a loop3
 
 caslett: ldx     tempchai,d
-         cpx     8,i
+         cpx     10,i
          brgt    nettab
          cpx     0,i
          brgt    ajout
@@ -124,6 +125,7 @@ fin5:    ret0
 
 afftexte:ldbytea buffer,d;
          ldx     0,i;
+         charo   '\n',i
 loopaff: cpx     len,d; 
          brge    affin;
          charo   buffer,x;
@@ -145,9 +147,19 @@ affint:  lda     tabint,d;
          ldx     0,i;
 loopaffi:cpx     sizetab,d; 
          brge    affinint;
-         deco   tabint,x;
+         deco    tabint,x;
+         charo   ' ',i
          addx    2,i;
+         lda     compint,d
+         cpa     3,i
+         brge    printsp
+         adda    1,i
+         sta     compint,d
          br      loopaffi;
+printsp: charo   '\n',i
+         lda     0,i
+         sta     compint,d
+         br      loopaffi
 affinint:charo   '\n',i; 
          ret0;
 
@@ -216,13 +228,14 @@ finconv: sta chiffre,d
 
 
 
-buffer:  .block  300;
+buffer:  .block  300; 
 size:    .equate   300;
 
 tabint:  .block  300; 
 sizetab: .word   0;
+compint: .word   0           ;compteur du nombre de int a imprimer sur une ligne
 
-chaine:  .block  10;Tableau de chaine de string du chiffre, 2 par chiffre
+chaine:  .block  10; Tableau de chaine de string du chiffre, 2 par chiffre 
 sizeint: .word   0;Grosseur du tableau populer, doit être de (nb de digits*2)-2
 chiffre: .word   0;Chiffre en int de retour
 tempchif:.word   0;Nombre temporaire pour la conversion
@@ -234,6 +247,7 @@ len:     .word   0;
 temp:    .block  1;
 temp2:   .word   0;
 err:     .ASCII  "Erreur : Débordement de capacité\x00"
+soll:    .ASCII  "Veuillez entrer le texte a dechiffrer : "
 
 
 
