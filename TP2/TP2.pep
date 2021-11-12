@@ -112,24 +112,23 @@ fin2:    ret0
 
 
 
-;************************************************************************
-;********************  METHODE afftexte *********************************
-;************************************************************************
+;
+; afftexte: Affiche le texte entre par l'utilisateur.
+; Passage des arguments par variables globales.
+; IN:  len = longueur du tampon buffer
+; OUT:
 
-afftexte:ldbytea buffer,d;
-         ldx     0,i;
-         charo   '\n',i
-loopaff: cpx     len,d; 
-         brge    affin;
-         charo   buffer,x;
-         addx    1,i;
-         br      loopaff;
-affin:   charo   '\n',i; 
-         ret0;
+afftexte:ldbytea buffer,d    ;    A = buffer
+         ldx     0,i         ;    X = 0
+         charo   '\n',i      ;Affiche un saut de ligne
+loopaff: cpx     len,d       ;    while ( x >= len ) {
+         brge    affin       ;        
+         charo   buffer,x    ;        System.out.print( buffer[X] )
+         addx    1,i         ;        X += 1
+         br      loopaff     ;    }
+affin:   charo   '\n',i      ;Affiche un saut de ligne suite a l'affichage du texte.
+         ret0
 
-;************************************************************************
-;********************  METHODE afftexte *********************************
-;************************************************************************
 
 ;************************************************************************
 ;********************  METHODE affInts **********************************
@@ -217,11 +216,11 @@ finconv: sta chiffre,d
 
 
 
-buffer:  .block  300; 
-size:    .equate   300;
+buffer:  .block  300         ; 
+size:    .equate 300         ;
 
-tabint:  .block  300; 
-sizetab: .word   0;
+tabint:  .block  300         ; 
+sizetab: .word   0           ;
 compint: .word   0           ;compteur du nombre de int a imprimer sur une ligne
 
 chaine:  .block  10          ; Tableau de chaine de string du chiffre, 2 par chiffre 
@@ -229,14 +228,14 @@ sizeint: .word   0           ;Grosseur du tableau populer, doit être de (nb de d
 chiffre: .word   0           ;Chiffre en int de retour
 tempchif:.word   0           ;Nombre temporaire pour la conversion
 
-tempbuff:.word 0;
-tempchai:.word 0;
+tempbuff:.word   0           ;
+tempchai:.word   0           ;
 
-len:     .word   0;
-temp:    .block  1;
-temp2:   .word   0;
+len:     .word   0           ;
+temp:    .block  1           ;
+temp2:   .word   0           ;
 err:     .ASCII  "Erreur : Débordement de capacité\x00"
-soll:    .ASCII  "Veuillez entrer le texte a dechiffrer : "
+soll:    .ASCII  "Veuillez entrer le texte à déchiffrer : "
 
 
 
