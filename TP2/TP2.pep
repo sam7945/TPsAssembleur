@@ -45,9 +45,13 @@ fin:     stx     len,d       ;    len = X
 
 
 
-;************************************************************************
-;********************   METHODE extrInts  ********************************
-;************************************************************************
+;
+; extrints: Extrait les caracteres entre '0' et '9' du tableau
+;           buffer. Les nombres de plus de 5 caracteres et dont la
+;           valeur n'est pas dans l'interval '0' - '32767' sont ignores
+; Passage des arguments et des résultats par variables globales.
+; IN:  len = longueur du tampon buffer
+; OUT: tabint = tableau contenant les entiers
 
 extrints:lda     0,i         ;Nettoye le registre A
          ldx     0,i         ;Nettoye le registre X
@@ -55,7 +59,7 @@ extrints:lda     0,i         ;Nettoye le registre A
 loop3:   lda     0,i
          ldx     tempbuff,d  ;    X = tempbuff (la variable tempbuff = position dans le tableau buffer)
          cpx     len,d       ;    if ( X >= len ) {
-         brge    fin5        ;        branch a "fin2" 
+         brge    fin2        ;        branch a "fin2" 
          ldbytea buffer,x    ;    } else { A = buffer[x] }
          addx    1,i         ;    X += 1
          stx     tempbuff,d  ;    tempbuff = X 
@@ -74,43 +78,37 @@ caschiff:ldx     tempchai,d  ;Si le caractere est un chiffre, X = tempchai (temp
          ldx     0,i         ;nettoye le registre x
          br      loop3       ;branch a loop3
 
-caslett: ldx     tempchai,d
-         cpx     10,i
-         brgt    nettab
-         cpx     0,i
-         brgt    ajout
-         br      loop3
+caslett: ldx     tempchai,d  ;Si le caractere est une lettre, X = tempchai
+         cpx     10,i        ;    if ( X > 10 ) {
+         brgt    nettab      ;        branch a "nettab" (nettoyer tabeleau)
+         cpx     0,i         ;    } else if ( X > 0 ) {
+         brgt    ajout       ;        branch a "ajout" (ajouter caractere dans le tableau chaine) }
+         br      loop3       ;branch a "loop3"
 
-ajout:   call    convint
-         lda     0,i;
-         lda     chiffre,d
-         cpa     0,i
-         brge    affect
-         br      loop3;
+ajout:   call    convint     ;Appel le sous programme convint
+         lda     0,i         ;Nettoye le registre A
+         lda     chiffre,d   ;    A = chiffre
+         cpa     0,i         ;    if ( A >= 0 ) {
+         brge    affect      ;        branch a "affect" (ajoute le chiffre dans le tableau de int) }
+         br      loop3       ;Branch a "loop"
 
-affect:  ldx     sizetab,d
-         sta     tabint,x
-         addx    2,i
-         stx     sizetab,d
-         br      loop3
+affect:  ldx     sizetab,d   ;    X = sizetab
+         sta     tabint,x    ;    tabint[X] = A
+         addx    2,i         ;    X += 2
+         stx     sizetab,d   ;    sizatab = X
+         br      loop3       ;Branch a "loop3"
 
-nettab:  ldx     0,i
-         lda     0,i
-nettab1: sta     chaine,x
-         addx    2,i
-         cpx     8,i
-         brle    nettab1
-         sta     tempchai,d
-         br      loop3
+nettab:  ldx     0,i         ;Nettoye le registre X
+         lda     0,i         ;Nettoye le registre A
+nettab1: sta     chaine,x    ;    while ( X < 8 ) {
+         addx    2,i         ;        chaine[X] = 0
+         cpx     8,i         ;        X += 2
+         brle    nettab1     ;    }
+         sta     tempchai,d  ;    tempchai = 0
+         br      loop3       ;Branch a "loop3"
 
 fin2:    ret0
 
-
-
-
-;************************************************************************
-;********************   METHODE extrInts  ********************************
-;************************************************************************
 
 
 
@@ -226,10 +224,10 @@ tabint:  .block  300;
 sizetab: .word   0;
 compint: .word   0           ;compteur du nombre de int a imprimer sur une ligne
 
-chaine:  .block  10; Tableau de chaine de string du chiffre, 2 par chiffre 
-sizeint: .word   0;Grosseur du tableau populer, doit être de (nb de digits*2)-2
-chiffre: .word   0;Chiffre en int de retour
-tempchif:.word   0;Nombre temporaire pour la conversion
+chaine:  .block  10          ; Tableau de chaine de string du chiffre, 2 par chiffre 
+sizeint: .word   0           ;Grosseur du tableau populer, doit être de (nb de digits*2)-2
+chiffre: .word   0           ;Chiffre en int de retour
+tempchif:.word   0           ;Nombre temporaire pour la conversion
 
 tempbuff:.word 0;
 tempchai:.word 0;
