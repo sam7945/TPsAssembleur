@@ -24,23 +24,23 @@ Saisir:  lda     0,i         ;Nettoye le registre A
          stro    soll,d      ;Affiche le message de sollicitation
 loop:    chari   temp,d      ;Prend le prochain caractere et l'assigne a temp
          ldbytea temp,d      ;Load la variable contenant le caractère dans le registre A
-         cpa     '\n',i      ; if ( A == '\n' ) {
-         breq    test        ;    branch a "test"
-tts:     stbytea buffer,x    ; } else { buffer[x] = A }
-         addx    1,i         ; X += 1
-         cpx     size,i      ; if ( X == size(300) ) {
-         breq    mess        ;    branch a "mess"
-         br      loop        ; } else { branch a "loop" } 
-test:    stbytea buffer,x    ; buffer[x] = A
-         addx    1,i         ; X += 1
+         cpa     '\n',i      ;    if ( A == '\n' ) {
+         breq    test        ;        branch a "test"
+tts:     stbytea buffer,x    ;    } else { buffer[x] = A }
+         addx    1,i         ;    X += 1
+         cpx     size,i      ;    if ( X == size(300) ) {
+         breq    mess        ;        branch a "mess"
+         br      loop        ;    } else { branch a "loop" } 
+test:    stbytea buffer,x    ;    buffer[x] = A
+         addx    1,i         ;    X += 1
          chari   temp2,d     ;Demande le prochain byte et l'assigne a la variable temp2 
-         ldbytea temp2,d     ; A = temp2
-         cpa     '\n',i      ; if ( A == '\n' ) {
-         breq    fin         ;    branch a "fin"
-         br      tts         ; } else { branch a "tts" }
+         ldbytea temp2,d     ;    A = temp2
+         cpa     '\n',i      ;    if ( A == '\n' ) {
+         breq    fin         ;        branch a "fin"
+         br      tts         ;    } else { branch a "tts" }
 mess:    stro    err,d       ;Affiche le message d'erreur de debordement
          stop                ;Fin du programme
-fin:     stx     len,d       ; len = X
+fin:     stx     len,d       ;    len = X
          ret0
 
 
@@ -49,29 +49,30 @@ fin:     stx     len,d       ; len = X
 ;********************   METHODE extrInts  ********************************
 ;************************************************************************
 
-extrints:lda     0,i;
-         ldx     0,i;
+extrints:lda     0,i         ;Nettoye le registre A
+         ldx     0,i         ;Nettoye le registre X
 
 loop3:   lda     0,i
-         ldx     tempbuff,d  ;load la valeur de la variable tempbuff dans le registre x (position du tableau buffer) 
-         cpx     len,d       ;verifie si on est a l'exterieur du tableau buffer
-         brge    fin5        ;si nous sommes a l'exterieur du tableau buffer, branch a fin 
-         ldbytea buffer,x    ;load la valeur du premier element du buffer dans a (LA METHODE SE FINI ICI)
-         addx    1,i         ;incremente la position dans le tableau buffer de 1
-         stx     tempbuff,d  ;range la valeur de x (position tableau buffer) dans la variable tempbuff 
-         ldx     0,i         ;nettoye le registre x
-         call    nombre      ;verifie si le caractere se situe entre 0 et 9
+         ldx     tempbuff,d  ;    X = tempbuff (la variable tempbuff = position dans le tableau buffer)
+         cpx     len,d       ;    if ( X >= len ) {
+         brge    fin5        ;        branch a "fin2" 
+         ldbytea buffer,x    ;    } else { A = buffer[x] }
+         addx    1,i         ;    X += 1
+         stx     tempbuff,d  ;    tempbuff = X 
+         ldx     0,i         ;Nettoye le registre x
+         call    nombre      ;Appel de la sous-methode "nombre"
          
-caschiff:ldx     tempchai,d  ;si oui, load la valeur de la variable tempchai dans le registre x (position du tableau chaine)
-         addx    2,i         ;ajoute x pour incrementer le tableau string
-         stx     tempchai,d  ;store la valeur du x (position du tableau) dans la variable tempchai
-         cpx     10,i        ;verifie si on deborde du tableau chaine
-         brgt    loop3       ;si on depasse le max du tableau, on ne peut pas prendre le chiffre, on doit nettoyer le tableau chaine et continuer la lecture du texte.
-         subx    2,i
-         sta     chaine,x
-         stx     sizeint,d
+caschiff:ldx     tempchai,d  ;Si le caractere est un chiffre, X = tempchai (tempchai = position dans le tableau chaine)
+         addx    2,i         ;    X += 2
+         stx     tempchai,d  ;    tempchai = X
+         cpx     10,i        ;    if ( X > 10 ) {
+         brgt    loop3       ;        branch a "loop3" } 
+                             ;si on depasse le max du tableau, on ne prend pas le chiffre.
+         subx    2,i         ;    X -= 2
+         sta     chaine,x    ;    chaine[X] = A
+         stx     sizeint,d   ;    sizeint = X (sizeint = nombre de caracte du chiffre)
          ldx     0,i         ;nettoye le registre x
-         br      loop3       ;branche a loop3
+         br      loop3       ;branch a loop3
 
 caslett: ldx     tempchai,d
          cpx     10,i
@@ -102,7 +103,7 @@ nettab1: sta     chaine,x
          sta     tempchai,d
          br      loop3
 
-fin5:    ret0
+fin2:    ret0
 
 
 
@@ -164,22 +165,18 @@ affinint:charo   '\n',i;
 ;************************************************************************
 
 
-;************************************************************************
-;******************** SOUS METHODE nombre ******************************
-;************************************************************************
+;
+; Nombre: Identifier si un carractere represente le texte
+;         numerique '0' a '9'.
+; Passage des arguments par registres.
+; IN: A = Caractere
 
-
-nombre:  cpa     '0',i
-         brlt    caslett  
-         cpa     '9',i
-         brgt    caslett
-         br      caschiff   
+nombre:  cpa     '0',i       ;    if ( A < 0 ) {
+         brlt    caslett     ;        branch a "caslett" 
+         cpa     '9',i       ;    } else if ( A > 9 ) {
+         brgt    caslett     ;        branch a "caslett" }
+         br      caschiff    ;    } else { branch a "caschiff" }
          ret0
-
-
-;************************************************************************
-;******************** SOUS METHODE nombre ******************************
-;************************************************************************
 
 
 
