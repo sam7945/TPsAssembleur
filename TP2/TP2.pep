@@ -1,7 +1,11 @@
- ;27.10.2021
+;27.10.2021
 ;(C) INF2171 2021
-;TP Par Samuel Dextraze DEXS03039604 dextraze.samuel@courrier.uqam.ca 
+; TP Par Samuel Dextraze DEXS03039604 dextraze.samuel@courrier.uqam.ca 
 ; et Christophe Cloutier CLOC21119501 cloutier.christophe@courrier.uqam.ca
+; Ce programme invite l'utilisateur à entrer un texte de maximum 300 caractères
+; et filtre les nombres entiers de 0 à 32767. Le programme réaffiche le texte
+; entré par l'utilisateur et affiche tous les nombres entiers de 0 à 32767 contenus
+; dans celui-ci.
 
          call    Saisir
          call    afftexte
@@ -113,7 +117,7 @@ fin2:    ret0
 
 
 ;
-; afftexte: Affiche le texte entre par l'utilisateur.
+; afftexte: Affiche le texte entré par l'utilisateur.
 ; Passage des arguments par variables globales.
 ; IN:  len = longueur du tampon buffer
 ; OUT:
@@ -130,36 +134,34 @@ affin:   charo   '\n',i      ;Affiche un saut de ligne suite a l'affichage du te
          ret0
 
 
-;************************************************************************
-;********************  METHODE affInts **********************************
-;************************************************************************
+;
+; affint: Affiche les nombres entiers contenus dans le texte entré
+;         par l'utilisateur.
+; Passage des arguments par variables globales.
+; IN:  sizetab = longueur du tableau d'entiers
+;      tabint = tableau des entiers
+; OUT:
 
 
-affint:  lda     tabint,d;
-         ldx     0,i;
-loopaffi:cpx     sizetab,d; 
-         brge    affinint;
-         deco    tabint,x;
-         charo   ' ',i
-         addx    2,i;
-         lda     compint,d
-         cpa     3,i
-         brge    printsp
-         adda    1,i
-         sta     compint,d
-         br      loopaffi;
-printsp: charo   '\n',i
-         lda     0,i
-         sta     compint,d
+affint:  lda     tabint,d    ;    A = tabint
+         ldx     0,i         ;    X = 0
+loopaffi:cpx     sizetab,d   ;    while ( x < sizetab ) {
+         brge    affinint    ;
+         deco    tabint,x    ;        System.out.print( tabint[X])
+         charo   ' ',i       ;        System.out.print( ' ' )
+         addx    2,i         ;        X += 2  
+         lda     compint,d   ;        A = compint
+         cpa     3,i         ;        if ( A >= 3 ) {
+         brge    printsp     ;            branch a "printsp" (Change de ligne et nettoye compint)
+         adda    1,i         ;        A += 1
+         sta     compint,d   ;        compint = A
+         br      loopaffi    ;    }
+printsp: charo   '\n',i      ;    System.out.print( '\n' )
+         lda     0,i         ;    A = 0
+         sta     compint,d   ;    compint = A
          br      loopaffi
-affinint:charo   '\n',i; 
+affinint:charo   '\n',i      ;    System.out.print( '\n' 
          ret0;
-
-
-
-;************************************************************************
-;********************  METHODE affInts **********************************
-;************************************************************************
 
 
 ;
@@ -177,59 +179,57 @@ nombre:  cpa     '0',i       ;    if ( A < 0 ) {
 
 
 
-;************************************************************************
-;******************** SOUS METHODE convInt ******************************
-;************************************************************************
+;
+; convint: Convertit un texte numérique (chaine de caractères) en
+;          nombres entiers.
+; Passage des arguments par variables globales.
+; IN:  chaine = tableau contenant les nombres à convertir en entiers.
+;      sizeint = le nombre de caractères que contient la chaine
+;                de caractères à convertir en nombre entier.
+; OUT: chiffre = le nombre entier convertit.
 
 
-convint: ldx     0,i;
-         lda     0,i;
-         sta     chiffre,d;
-loopconv:ldbytea chiffre,d;
-         adda    chaine,x;
-         suba    '0',i;
-         cpx     sizeint,d;
-         brlt    x10;
-         br      finconv;
-
-x10:     sta tempchif,d; 
-         asla
-         asla
-         adda tempchif,d
-         asla 
-         stbytea chiffre,d
-         addx 2,i;
-         br loopconv
-
-
-finconv: sta chiffre,d
-         ldx     0,i
-         stx     tempchai,d;
-         ret0;
-
-
-;************************************************************************
-;******************** SOUS METHODE convInt ******************************
-;************************************************************************
+convint: ldx     0,i         ;    X = 0
+         lda     0,i         ;    A = 0
+         sta     chiffre,d   ;    chiffre = A
+loopconv:ldbytea chiffre,d   ;    while ( X < sizeint) { A = chiffre
+         adda    chaine,x    ;        A = A + chaine[X]
+         suba    '0',i       ;        A = A - '0'
+         cpx     sizeint,d   ;        
+         brlt    x10         ;        branch a "x10" }
+         br      finconv     ;    branch a "finconv"
+x10:     sta     tempchif,d  ;    tempchiff = A
+         asla                ;    A = A*2
+         asla                ;    A = A*2
+         adda    tempchif,d  ;    A = A + tempchiff
+         asla                ;    A = A*2
+         stbytea chiffre,d   ;    chiffre = A
+         addx    2,i         ;    X += 2
+         br      loopconv    ;    branch a "loopconv"
+finconv: sta     chiffre,d   ;    chiffre = A
+         ldx     0,i         ;    X = 0
+         stx     tempchai,d  ;    tempchai = 0 
+         ret0                ;
 
 
 
 
 
-buffer:  .block  300         ; 
-size:    .equate 300         ;
 
-tabint:  .block  300         ; 
-sizetab: .word   0           ;
-compint: .word   0           ;compteur du nombre de int a imprimer sur une ligne
+buffer:  .block  300         ;Tableau buffer du texte entré par l'utilisateur 
+size:    .equate 300         ;Constante de la grosseur du tableau buffer maximum (300)
+
+tabint:  .block  300         ;Tableau des nombres entiers à imprimer. 
+sizetab: .word   0           ;Grosseur du tableau des nombres entiers.
+compint: .word   0           ;compteur du nombre de nombres entiers a imprimer sur une ligne.
 
 chaine:  .block  10          ; Tableau de chaine de string du chiffre, 2 par chiffre 
 sizeint: .word   0           ;Grosseur du tableau populer, doit être de (nb de digits*2)-2
 chiffre: .word   0           ;Chiffre en int de retour
 tempchif:.word   0           ;Nombre temporaire pour la conversion
 
-tempbuff:.word   0           ;
-tempchai:.word   0           ;
+tempbuff:.word   0           ;Variable temporaire du tableau tampon buffer.
+tempchai:.word   0           ;Variable temporaire du tableau de chaine.
 
 len:     .word   0           ;
 temp:    .block  1           ;
