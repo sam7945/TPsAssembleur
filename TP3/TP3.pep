@@ -10,24 +10,37 @@
          STOP
 
 ;Event*
-agenda: ;ERROR: Must have mnemonic or dot command after symbol definition.
+
+
+agenda:  call    saisir      ;Appel de la fonction saisir
+         
+         
 
 ;saisir
 ;Cette methode affiche un menu contenant 2 options (1- Saisir 2- Quitter). La fonction
 ;Saisir permet à l'utilisateur d'entrer l'information sur un seul évènement. La fonction
 ;Quitter permet d'arrêter la saisie de nouveau évènements.
+;
 saisir:  STRO    menu,d      ;affiche le menu de saisi
          DECI    -2,s        ;assigne le choix de l'utilisateur a l'adresse pile - 2
          SUBSP   2,i         ;empile le choix de l'utilisateur
-         DECO    0,s        ;
-
+         LDX     0,s         ;assigne le choix de l'utilisateur au registre x
+         CPX     1,i         ;if ( x == 1 ) {
+         BREQ    nexteven    ;    branch "nexteven 
+         CPX     2,i         ;if ( x == 2 ) {
+         BREQ    quitmenu    ;    branch "quitmenu"
+nexteven:ADDSP   2,i
+         BR      saisir
+quitmenu:ADDSP   2,i
+         RET2 
 
 creer:
-
 
 inserer:
 
 
-menu:    .ASCII  " ****************** \n * [1]-Saisir     "
-         .ASCII  "* \n * [2]-Quitter    * \n ******************\x00"
+menu:    .ASCII  " ****************** "
+         .ASCII  "\n * [1]-Saisir     * "
+         .ASCII  "\n * [2]-Quitter    *" 
+         .ASCII  "\n ******************\n\x00"
          .END
