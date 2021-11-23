@@ -42,13 +42,13 @@ nextEven:ADDSP   optMen,i    ;Depile #optMen
 quitMenu:ADDSP   optMen,i    ;Depile #optMen
          RET0
 
+;variable locale
+optMen:  .EQUATE 2           ;#2d
+
 ;creer:
 
 ;inserer:
 
-
-;VARIABLE LOCALE
-optMen:  .EQUATE 2           ;#2d
 
 
 
