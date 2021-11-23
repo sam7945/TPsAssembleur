@@ -5,7 +5,7 @@
 ; Ce programme gère un agenda hebdomadaire des évènements
 
 
-
+         call    agenda
 
          STOP
 
@@ -13,6 +13,7 @@
 
 
 agenda:  call    saisir      ;Appel de la fonction saisir
+         ret0 
          
          
 
@@ -22,25 +23,36 @@ agenda:  call    saisir      ;Appel de la fonction saisir
 ;Quitter permet d'arrêter la saisie de nouveau évènements.
 ;
 saisir:  STRO    menu,d      ;affiche le menu de saisi
-         DECI    -2,s        ;assigne le choix de l'utilisateur a l'adresse pile - 2
-         SUBSP   2,i         ;empile le choix de l'utilisateur
-         LDX     0,s         ;assigne le choix de l'utilisateur au registre x
-         CPX     1,i         ;if ( x == 1 ) {
+         CHARI   -2,s        ;assigne le choix de l'utilisateur a l'adresse pile - 2
+         SUBSP   optmen,i    ;#optmen empile le choix de l'utilisateur 
+         LDBYTEX 0,s         ;assigne le choix de l'utilisateur au registre x
+cp:      CPX     '\n',i
+         BREQ    nextchar
+         CPX     '1',i         ;if ( x == 1 ) {
          BREQ    nexteven    ;    branch "nexteven 
-         CPX     2,i         ;if ( x == 2 ) {
+         CPX     '2',i         ;if ( x == 2 ) {
          BREQ    quitmenu    ;    branch "quitmenu"
-nexteven:ADDSP   2,i
+nextchar:CHARI   0,s
+         LDBYTEX 0,s
+         br      cp 
+nexteven:ADDSP   optmen,i    ;#optmen
          BR      saisir
-quitmenu:ADDSP   2,i
-         RET2 
+quitmenu:ADDSP   optmen,i    ;#optmen
+         RET0
 
-creer:
+;creer:
 
-inserer:
+;inserer:
+
+
+;VARIABLE LOCALE
+optmen:  .EQUATE 2           ;#2d
+
 
 
 menu:    .ASCII  " ****************** "
          .ASCII  "\n * [1]-Saisir     * "
          .ASCII  "\n * [2]-Quitter    *" 
-         .ASCII  "\n ******************\n\x00"
+         .ASCII  "\n ******************\n"
+         .ASCII  "Votre choix : \x00"
          .END
