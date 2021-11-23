@@ -24,20 +24,22 @@ agenda:  call    saisir      ;Appel de la fonction saisir
 ;
 saisir:  STRO    menu,d      ;affiche le menu de saisi
          CHARI   -2,s        ;assigne le choix de l'utilisateur a l'adresse pile - 2
-         SUBSP   optmen,i    ;#optmen empile le choix de l'utilisateur 
+         SUBSP   optMen,i    ;Empile le choix de l'utilisateur #optMen
          LDBYTEX 0,s         ;assigne le choix de l'utilisateur au registre x
-cp:      CPX     '\n',i
-         BREQ    nextchar
-         CPX     '1',i         ;if ( x == 1 ) {
-         BREQ    nexteven    ;    branch "nexteven 
-         CPX     '2',i         ;if ( x == 2 ) {
-         BREQ    quitmenu    ;    branch "quitmenu"
-nextchar:CHARI   0,s
-         LDBYTEX 0,s
-         br      cp 
-nexteven:ADDSP   optmen,i    ;#optmen
-         BR      saisir
-quitmenu:ADDSP   optmen,i    ;#optmen
+cp:      CPX     '\n',i      ;if (x  == '\n' ) {
+         BREQ    nextChar    ;    branch nextchar
+         CPX     '1',i       ;} else if ( x == 1 ) {
+         BREQ    nextEven    ;    branch "nexteven 
+         CPX     '2',i       ;} else if ( x == 2 ) {
+         BREQ    quitMenu    ;    branch "quitmenu"
+         STRO    errMenu,d   ;} else {    System.out.println(errMenu)
+         br      saisir      ;    branch "saisir" }
+nextChar:CHARI   0,s         ;prochain char
+         LDBYTEX 0,s         ;load le char dans X
+         br      cp          ;branch cp
+nextEven:ADDSP   optMen,i    ;Depile #optMen
+         BR      saisir      ;branch a saisir
+quitMenu:ADDSP   optMen,i    ;Depile #optMen
          RET0
 
 ;creer:
@@ -46,7 +48,7 @@ quitmenu:ADDSP   optmen,i    ;#optmen
 
 
 ;VARIABLE LOCALE
-optmen:  .EQUATE 2           ;#2d
+optMen:  .EQUATE 2           ;#2d
 
 
 
@@ -55,4 +57,5 @@ menu:    .ASCII  " ****************** "
          .ASCII  "\n * [2]-Quitter    *" 
          .ASCII  "\n ******************\n"
          .ASCII  "Votre choix : \x00"
+errMenu: .ASCII  "Erreur, votre choix doit être 1 ou 2.\x00"
          .END
