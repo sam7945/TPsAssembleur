@@ -54,24 +54,19 @@ creer:   SUBSP   2,i ; #eventC
          CALL    new ; eventC = malloc(8) #prJour #prDebut #prDuree #prSuiv #prPrec
          LDA     0,i 
          STX     eventC,s
- 
          CALL    evenJour
          CPA     NULL,i
          BREQ    fin 
-         STA     prJour,x ; eventC->jour = 3;
-
-         LDA     0,i 
+         STA     prJour,x ; eventC->jour = 3;LDA     0,i 
          CALL    evenHeur
          CPA     NULL,i
          BREQ    fin
          STA     prDebut,x ; eventC->debut = 1995;
-
          LDA     0,i
          CALL    evenDure
          CPA     NULL,i
          BREQ    fin         
          STA     prDuree,x ; eventC->durée = 2004;
-
          LDA     NULL,i
          STA     prSuiv,x  ; eventC->suivent = NULL
          STA     prPrec,x  ; eventC->precedent=NULL
@@ -147,8 +142,8 @@ maxHeur: .EQUATE 1440
 ;
 evenDure:STRO    sollDure,d  ;Print(sollDure)
          SUBSP   resDuree,i  ;#resDuree
-         DECI   spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
-         LDA spDuree,s   ;
+         DECI    spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
+         LDA     spDuree,s   ;
          CPA     minDuree,i  ;compare aux heures/minutes minimum (1)
          BRLT    errDuree
          CPA     maxDuree,i  ;compare aux heures/minutes maximum (1440)
