@@ -58,7 +58,7 @@ creer:   SUBSP 2,i ; #eventC
          STA prDebut,x ; eventC->debut = 1995;
          LDA 2004,i          
          STA prDuree,x ; eventC->durée = 2004;
-         LDA 0,i
+         LDA NULL,i
          STA prSuiv,x  ; eventC->suivent = NULL
          STA prPrec,x  ; eventC->precedent=NULL
          LDA eventC,s 
@@ -66,6 +66,7 @@ creer:   SUBSP 2,i ; #eventC
          CALL prprod ; prprod(produitC); 
          RET2 ; #eventC 
 eventC:  .EQUATE 0 ; #2h 
+NULL:    .EQUATE 0 ; #2d null
 ; ****** Structure event
 prJour:  .EQUATE 0 ; #2d jour de l'évènement
 prDebut: .EQUATE 2 ; #2d heure de début
@@ -101,7 +102,6 @@ prprod:  SUBSP 6,i ; #prevdstr #preventX #preventA
 
          LDX prPrec,i 
          DECO preventA,sxf ; print(prprodA->prPrec) 
-         CHARO ':',i ; print(":")
 
          
          CHARO '\n',i ; print("\n")
