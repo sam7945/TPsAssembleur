@@ -51,13 +51,16 @@ optMen:  .EQUATE 0           ;#2d
 ;
 creer:   SUBSP   2,i ; #eventC 
          LDA     6,i 
-         CALL    new ; eventC = malloc(8) #prJour #prDebut #prDuree #prSuiv #prPrec 
+         CALL    new ; eventC = malloc(8) #prJour #prDebut #prDuree #prSuiv #prPrec
+         LDA     0,i 
          STX     eventC,s
-         CALL     sollEven
-         ;LDA    3,i 
-         STA     prJour,x ; eventC->jour = 3; 
-         ;LDA     1995,i 
+         CALL    evenJour
+         STA     prJour,x ; eventC->jour = 3;
+         LDA     0,i 
+         CALL    evenHeur
          STA     prDebut,x ; eventC->debut = 1995;
+         LDA     0,i
+         CALL    evenDure 
          ;LDA     2004,i          
          STA     prDuree,x ; eventC->durée = 2004;
          LDA     NULL,i
@@ -81,49 +84,70 @@ prPrec:  .EQUATE 8 ; #2h pointeur vers le précédent
 
 
 
-
-;sollEven
-;Cette methode fait la sollicitation pour la creation d'un evenement.
-;Les donnees sont sauvegardees sur la pile.
+;evenJour
+;Cette methode fait la sollicitation du Jour pour la creation d'un evenement.
+;OUT : A = jour
 ;
-;
-
-sollEven:SUBSP   6,i         ;Reserve la pile pour la sollicitation #spJour #spHeure #spDuree JOUR,HEURE,DUREE 
-loopJour:STRO    sollJour,d  ;Print(sollJour)
+evenJour:STRO    sollJour,d  ;Print(sollJour)
+         SUBSP   2,i ;WARNING: Number of bytes allocated (2) not equal to number of bytes listed in trace tag (0).
          CHARI   spJour,s    ;assigne le choix de l'utilisateur a la pile spJour
          CHARI   spJour,s
-         LDBYTEX spJour,s    ;
-         CPX     1,i         ;compare au jour minimum (lundi)
-         BRLT    errEven
-         CPX     7,i         ;compare au jour maximum (dimanche)
-         BRGT    errEven
-loopHeur:STRO    sollHeur,d  ;Print(sollHeur) 
+         LDBYTEA spJour,s    ;
+         CPA     '1',i         ;compare au jour minimum (lundi)
+         BRLT    errJour
+         CPA     '7',i         ;compare au jour maximum (dimanche)
+         BRGT    errJour
+         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         RET0
+errJour: STRO    errForma,d  ;Print(errForma)
+         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         RET0
+;variable locale
+spJour:  .EQUATE 0           ;#2d
+
+;evenHeur
+;Cette methode fait la sollicitation de l'Heure/minutes de debut pour la creation d'un evenement.
+;OUT : A = heure/minute
+;
+evenHeur:STRO    sollHeur,d  ;Print(sollHeur) 
+         SUBSP   2,i ;WARNING: Number of bytes allocated (2) not equal to number of bytes listed in trace tag (0).
          CHARI   spHeure,s   ;assigne le choix de l'utilisateur a la pile spHeur
          CHARI   spHeure,s
-         LDBYTEX spHeure,s   ;
-         CPX     1,i         ;compare aux heures/minutes minimum (1)
-         BRLT    errEven
-         CPX     1440,i      ;compare aux heures/minutes maximum (1440)
-         BRGT    errEven
-loopDure:STRO    sollDure,d  ;Print(sollDure)
+         LDBYTEA spHeure,s   ;
+         CPA     '1',i         ;compare aux heures/minutes minimum (1)
+         BRLT    errHeure
+         CPA     maxHeur,i      ;compare aux heures/minutes maximum (1440)
+         BRGT    errHeure
+         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         RET0
+errHeure:STRO    errForma,d  ;Print(errForma)
+         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         RET0
+;variable locale
+spHeure: .EQUATE 0           ;#2d
+maxHeur: .EQUATE 1440
+
+;evenDure
+;Cette methode fait la sollicitation de l'Heure/minutesde duree pour la creation d'un evenement.
+;OUT : A = heure/minute
+;
+evenDure:STRO    sollDure,d  ;Print(sollDure)
+         SUBSP   2,i ;WARNING: Number of bytes allocated (2) not equal to number of bytes listed in trace tag (0).
          CHARI   spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
          CHARI   spDuree,s
-         LDBYTEX spDuree,s   ;
-         CPX     1,i         ;compare aux heures/minutes minimum (1)
-         BRLT    errEven
-         CPX     1440,i      ;compare aux heures/minutes maximum (1440)
-         BRGT    errEven
-         RET6 ;WARNING: Number of bytes deallocated (6) not equal to number of bytes listed in trace tag (0).
-
-errEven: STRO     errForma,d  ;Print(errForma)
-         ADDSP   6,i          ;Desenregistre la pile ;WARNING: Number of bytes deallocated (6) not equal to number of bytes listed in trace tag (0).
+         LDBYTEA spDuree,s   ;
+         CPA     '1',i         ;compare aux heures/minutes minimum (1)
+         BRLT    errDuree
+         CPA     maxDuree,i      ;compare aux heures/minutes maximum (1440)
+         BRGT    errDuree
+         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         RET0
+errDuree:STRO    errForma,d  ;Print(errForma)
+         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
          ret0
-;Variables locales
-spJour:  .EQUATE 0           ;#2d
-spHeure: .EQUATE 2           ;#2d
-spDuree: .EQUATE 4           ;#2d
-
-
+;variable locale
+spDuree: .EQUATE 0           ;#2d
+maxDuree:.EQUATE 1440
 
 
 
