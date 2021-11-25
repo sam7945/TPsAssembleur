@@ -25,8 +25,7 @@ agenda:  call    saisir      ;Appel de la fonction saisir
 saisir:  STRO    menu,d      ;affiche le menu de saisi
          lda     0,i
          ldx     0,i
-         CHARI   -2,s        ;assigne le choix de l'utilisateur a l'adresse pile - 2
-         SUBSP   optMen,i    ;Empile le choix de l'utilisateur #optMen
+         CHARI   optMen,s        ;assigne le choix de l'utilisateur a l'adresse pile optMen
          LDBYTEX 0,s         ;assigne le choix de l'utilisateur au registre x
 cp:      CPX     '\n',i      ;if (x  == '\n' ) {
          BREQ    nextChar    ;    branch nextchar
@@ -39,13 +38,11 @@ cp:      CPX     '\n',i      ;if (x  == '\n' ) {
 nextChar:CHARI   0,s         ;prochain char
          LDBYTEX 0,s         ;load le char dans X
          br      cp          ;branch cp
-nextEven:ADDSP   optMen,i    ;Depile #optMen
-         call    creer       ;call creer()
-quitMenu:ADDSP   optMen,i    ;Depile #optMen
-         RET0
+nextEven:call    creer       ;call creer()    
+quitMenu:RET0                ;Retourne à agenda et quitte
 
 ;variable locale
-optMen:  .EQUATE 2           ;#2d
+optMen:  .EQUATE 0           ;#2d
 
 
 creer:   SUBSP 2,i ; #eventC 
