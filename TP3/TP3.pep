@@ -93,9 +93,9 @@ evenJour:STRO    sollJour,d  ;Print(sollJour)
          CHARI   spJour,s    ;assigne le choix de l'utilisateur a la pile spJour
          CHARI   spJour,s
          LDBYTEA spJour,s    ;
-         CPA     '1',i         ;compare au jour minimum (lundi)
+         CPA     minJour,i   ;compare au jour minimum (lundi)
          BRLT    errJour
-         CPA     '7',i         ;compare au jour maximum (dimanche)
+         CPA     maxJour,i   ;compare au jour maximum (dimanche)
          BRGT    errJour
          ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
          RET0
@@ -104,6 +104,8 @@ errJour: STRO    errForma,d  ;Print(errForma)
          RET0
 ;variable locale
 spJour:  .EQUATE 0           ;#2d
+minJour: .EQUATE 1
+maxJour: .EQUATE 7
 
 ;evenHeur
 ;Cette methode fait la sollicitation de l'Heure/minutes de debut pour la creation d'un evenement.
@@ -114,9 +116,9 @@ evenHeur:STRO    sollHeur,d  ;Print(sollHeur)
          CHARI   spHeure,s   ;assigne le choix de l'utilisateur a la pile spHeur
          CHARI   spHeure,s
          LDBYTEA spHeure,s   ;
-         CPA     '1',i         ;compare aux heures/minutes minimum (1)
+         CPA     minHeur,i   ;compare aux heures/minutes minimum (1)
          BRLT    errHeure
-         CPA     maxHeur,i      ;compare aux heures/minutes maximum (1440)
+         CPA     maxHeur,i   ;compare aux heures/minutes maximum (1440)
          BRGT    errHeure
          ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
          RET0
@@ -125,6 +127,7 @@ errHeure:STRO    errForma,d  ;Print(errForma)
          RET0
 ;variable locale
 spHeure: .EQUATE 0           ;#2d
+minHeur: .EQUATE 1
 maxHeur: .EQUATE 1440
 
 ;evenDure
@@ -136,9 +139,9 @@ evenDure:STRO    sollDure,d  ;Print(sollDure)
          CHARI   spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
          CHARI   spDuree,s
          LDBYTEA spDuree,s   ;
-         CPA     '1',i         ;compare aux heures/minutes minimum (1)
+         CPA     minDuree,i  ;compare aux heures/minutes minimum (1)
          BRLT    errDuree
-         CPA     maxDuree,i      ;compare aux heures/minutes maximum (1440)
+         CPA     maxDuree,i  ;compare aux heures/minutes maximum (1440)
          BRGT    errDuree
          ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
          RET0
@@ -147,6 +150,7 @@ errDuree:STRO    errForma,d  ;Print(errForma)
          ret0
 ;variable locale
 spDuree: .EQUATE 0           ;#2d
+minDuree:.EQUATE 1
 maxDuree:.EQUATE 1440
 
 
