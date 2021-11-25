@@ -54,22 +54,31 @@ creer:   SUBSP   2,i ; #eventC
          CALL    new ; eventC = malloc(8) #prJour #prDebut #prDuree #prSuiv #prPrec
          LDA     0,i 
          STX     eventC,s
+ 
          CALL    evenJour
+         CPA     NULL,i
+         BREQ    fin 
          STA     prJour,x ; eventC->jour = 3;
+
          LDA     0,i 
          CALL    evenHeur
+         CPA     NULL,i
+         BREQ    fin
          STA     prDebut,x ; eventC->debut = 1995;
+
          LDA     0,i
-         CALL    evenDure 
-         ;LDA     2004,i          
+         CALL    evenDure
+         CPA     NULL,i
+         BREQ    fin         
          STA     prDuree,x ; eventC->durée = 2004;
+
          LDA     NULL,i
          STA     prSuiv,x  ; eventC->suivent = NULL
          STA     prPrec,x  ; eventC->precedent=NULL
          LDA     eventC,s 
 
          CALL    prprod ; prprod(produitC); 
-         RET2 ; #eventC 
+fin:     RET2 ; #eventC 
 eventC:  .EQUATE 0 ; #2h 
 NULL:    .EQUATE 0 ; #2d null
 ; ****** Structure event
@@ -89,21 +98,22 @@ prPrec:  .EQUATE 8 ; #2h pointeur vers le précédent
 ;OUT : A = jour
 ;
 evenJour:STRO    sollJour,d  ;Print(sollJour)
-         SUBSP   2,i ;WARNING: Number of bytes allocated (2) not equal to number of bytes listed in trace tag (0).
-         CHARI   spJour,s    ;assigne le choix de l'utilisateur a la pile spJour
-         CHARI   spJour,s
-         LDBYTEA spJour,s    ;
+         SUBSP   resJour,i   ;#resJour 
+         DECI    spJour,s    ;assigne le choix de l'utilisateur a la pile spJour
+         LDA     spJour,s    ;
          CPA     minJour,i   ;compare au jour minimum (lundi)
          BRLT    errJour
          CPA     maxJour,i   ;compare au jour maximum (dimanche)
          BRGT    errJour
-         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         ADDSP   resJour,i   ;#resJour
          RET0
 errJour: STRO    errForma,d  ;Print(errForma)
-         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         LDA     NULL,i
+         ADDSP   resJour,i   ;#resJour
          RET0
 ;variable locale
 spJour:  .EQUATE 0           ;#2d
+resJour: .EQUATE 2           ;#2d
 minJour: .EQUATE 1
 maxJour: .EQUATE 7
 
@@ -112,21 +122,22 @@ maxJour: .EQUATE 7
 ;OUT : A = heure/minute
 ;
 evenHeur:STRO    sollHeur,d  ;Print(sollHeur) 
-         SUBSP   2,i ;WARNING: Number of bytes allocated (2) not equal to number of bytes listed in trace tag (0).
-         CHARI   spHeure,s   ;assigne le choix de l'utilisateur a la pile spHeur
-         CHARI   spHeure,s
-         LDBYTEA spHeure,s   ;
+         SUBSP   resHeure,i  ;#resHeure
+         DECI    spHeure,s   ;assigne le choix de l'utilisateur a la pile spHeur
+         LDA     spHeure,s   ;
          CPA     minHeur,i   ;compare aux heures/minutes minimum (1)
          BRLT    errHeure
          CPA     maxHeur,i   ;compare aux heures/minutes maximum (1440)
          BRGT    errHeure
-         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         ADDSP   resHeure,i  ;#resHeure
          RET0
 errHeure:STRO    errForma,d  ;Print(errForma)
-         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         LDA     NULL,i
+         ADDSP   resHeure,i  ;#resHeure
          RET0
 ;variable locale
 spHeure: .EQUATE 0           ;#2d
+resHeure:.EQUATE 2           ;#2d
 minHeur: .EQUATE 1
 maxHeur: .EQUATE 1440
 
@@ -135,21 +146,22 @@ maxHeur: .EQUATE 1440
 ;OUT : A = heure/minute
 ;
 evenDure:STRO    sollDure,d  ;Print(sollDure)
-         SUBSP   2,i ;WARNING: Number of bytes allocated (2) not equal to number of bytes listed in trace tag (0).
-         CHARI   spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
-         CHARI   spDuree,s
-         LDBYTEA spDuree,s   ;
+         SUBSP   resDuree,i  ;#resDuree
+         DECI   spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
+         LDA spDuree,s   ;
          CPA     minDuree,i  ;compare aux heures/minutes minimum (1)
          BRLT    errDuree
          CPA     maxDuree,i  ;compare aux heures/minutes maximum (1440)
          BRGT    errDuree
-         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         ADDSP   resDuree,i  ;#resDuree
          RET0
 errDuree:STRO    errForma,d  ;Print(errForma)
-         ADDSP   2,i ;WARNING: Number of bytes deallocated (2) not equal to number of bytes listed in trace tag (0).
+         LDA     NULL,i
+         ADDSP   resDuree,i  ;#resDuree
          ret0
 ;variable locale
 spDuree: .EQUATE 0           ;#2d
+resDuree:.EQUATE 2           ;#2d
 minDuree:.EQUATE 1
 maxDuree:.EQUATE 1440
 
@@ -215,7 +227,8 @@ errMenu: .ASCII  "Erreur, votre choix doit être 1 ou 2.\x00"
 sollJour:.ASCII  "Jours : \x00"
 sollHeur:.ASCII  "Heure de début : \x00"
 sollDure:.ASCII  "Durée : \x00"
-errForma:.ASCII  "Erreur de format.\x00"
+errForma:.ASCII  "Erreur de format."
+         .ASCII  "\n \x00"
 
 
 
