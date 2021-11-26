@@ -23,6 +23,7 @@ agenda:  call    saisir      ;Appel de la fonction saisir
 ;Quitter permet d'arrêter la saisie de nouveau évènements.
 ;
 saisir:  STRO    menu,d      ;affiche le menu de saisi
+         subsp   variable,i  ;allocate #optMen
          lda     0,i
          ldx     0,i
          CHARI   optMen,s    ;assigne le choix de l'utilisateur a l'adresse pile optMen
@@ -34,24 +35,27 @@ cp:      CPX     '\n',i      ;if (x  == '\n' ) {
          CPX     '2',i       ;} else if ( x == 2 ) {
          BREQ    quitMenu    ;    branch "quitmenu"
          STRO    errMenu,d   ;} else {    print(errMenu)
+         addsp   variable,i  ;dealocate #optMen
          br      saisir      ;    branch "saisir" }
 nextChar:CHARI   0,s         ;prochain char
          LDBYTEX 0,s         ;load le char dans X
          br      cp          ;branch cp
 nextEven:call    creer       ;call creer()
+         addsp   variable,i  ;deallocate #optMen
          br      saisir          
-quitMenu:RET0                ;Retourne à agenda et quitte
-;variable locale
-optMen:  .EQUATE 0           ;#2d
+quitMenu:addsp   variable,i  ;deallocate #optMen
+         RET0                ;Retourne à agenda et quitte 
 
+optMen:  .EQUATE 0           ;local variable #2d
+variable:.EQUATE 2           
 
 
 ;creer
 ;Cette methode permet de creer un nouvel objet evenement.
 ;
 creer:   SUBSP   2,i ; #eventC 
-         LDA     6,i 
-         CALL    new ; eventC = malloc(8) #prJour #prDebut #prDuree #prSuiv #prPrec
+         LDA     10,i 
+         CALL    new ; eventC = malloc(10) #prJour #prDebut #prDuree #prSuiv #prPrec
          LDA     0,i 
          STX     eventC,s
          CALL    evenJour
