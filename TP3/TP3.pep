@@ -41,6 +41,7 @@ nextChar:CHARI   0,s         ;prochain char
          LDBYTEX 0,s         ;load le char dans X
          br      cp          ;branch cp
 nextEven:call    creer       ;call creer()
+         call    inserer     ;call inserer()
          addsp   variable,i  ;deallocate #optMen
          br      saisir          
 quitMenu:addsp   variable,i  ;deallocate #optMen
@@ -75,10 +76,10 @@ creer:   SUBSP   2,i         ; #eventC
          LDA     NULL,i
          STA     prSuiv,x    ; eventC->suivent = NULL
          STA     prPrec,x    ; eventC->precedent=NULL
-         LDA     eventC,s    ; A = addresse eventC (retourne l'adresse de l'évènement)
+         LDX     eventC,s    ; X = addresse eventC (retourne l'adresse de l'évènement)
          CALL    prprod      ; prprod(produitC)
          RET2                ;#eventC 
-fin:     LDA     NULL,i      ; A = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
+fin:     LDX     NULL,i      ; X = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
          RET2                ; #eventC 
 eventC:  .EQUATE 0 ; #2h 
 NULL:    .EQUATE 0 ; #2d null
@@ -210,13 +211,47 @@ prprod:  SUBSP 6,i ; #prevdstr #preventX #preventA
 
 
 
+;inserer
+;Cette methode permet d'insérer un évènement dans la liste chainée d'évènement
+;seulement si celui-ci est conforme. (pas d'erreur de format)
+;
+;IN : A = Adresse de l'évènement sur le HEAP
+;
+inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'erreur de format)
+         BREQ    nonConf     ;si non conforme (null), branch fin2
+         LDA     compteur,d  ;else load le compteur dans A
+         ADDA    1,i         ;A += 1
+         STA     compteur,d  ;compteur = A
+         CPA     1,i         ; if (A == 1) {
+         BREQ    premEven    ;    branch fin2 (il n'y a pas d'autres evenements)
+                             ; } else { compare pour l'insertion }
+         BR      suivEven    ; insertion evenement suivant
+
+
+nonConf: RET0
+premEven:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
+         LDA     1,i         ;1 est temporaire, on va LDA adresse prec
+         STA     eventC,x
+         SUBX    evenPr,i
+         ADDX    evenSuiv,i
+         LDA     2,i         ;2 est temporaire, on va LDA adresse suivante
+         STA     eventC,x
+         RET0
+suivEven:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
+         LDA     3,i         ;le 3 est temporaire, on va LDA l'adresse prec
+         STA     eventC,x
+         SUBX    evenPr,i
+         LDA     3,i         ;3 temporaire, on va LDA l'adresse suivante
+         ADDX    evenSuiv,i
+         STA     eventC,x
+         RET0
+;variable locales
+evenSuiv:.EQUATE 6
+evenPr:  .EQUATE 8
+compteur:.WORD  0           ;compteur du nombre d'évènement existant dans la liste chainée
 
 
 
-
-
-
-;inserer:
 
 
 menu:    .ASCII  " ****************** "
