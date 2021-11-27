@@ -53,31 +53,33 @@ variable:.EQUATE 2
 ;creer
 ;Cette methode permet de creer un nouvel objet evenement.
 ;
-creer:   SUBSP   2,i ; #eventC 
+creer:   SUBSP   2,i         ; #eventC 
          LDA     10,i 
-         CALL    new ; eventC = malloc(10) #prJour #prDebut #prDuree #prSuiv #prPrec
+         CALL    new         ; eventC = malloc(10) #prJour #prDebut #prDuree #prSuiv #prPrec
          LDA     0,i 
          STX     eventC,s
+
          CALL    evenJour
          CPA     NULL,i
          BREQ    fin 
-         STA     prJour,x ; eventC->jour = 3;LDA     0,i 
+         STA     prJour,x    ; eventC->jour = 3;LDA     0,i 
          CALL    evenHeur
          CPA     NULL,i
          BREQ    fin
-         STA     prDebut,x ; eventC->debut = 1995;
+         STA     prDebut,x   ; eventC->debut = 1995;
          LDA     0,i
          CALL    evenDure
          CPA     NULL,i
          BREQ    fin         
-         STA     prDuree,x ; eventC->durée = 2004;
+         STA     prDuree,x   ; eventC->durée = 2004;
          LDA     NULL,i
-         STA     prSuiv,x  ; eventC->suivent = NULL
-         STA     prPrec,x  ; eventC->precedent=NULL
-         LDA     eventC,s 
-
-         CALL    prprod ; prprod(produitC); 
-fin:     RET2 ; #eventC 
+         STA     prSuiv,x    ; eventC->suivent = NULL
+         STA     prPrec,x    ; eventC->precedent=NULL
+         LDA     eventC,s    ; A = addresse eventC (retourne l'adresse de l'évènement)
+         CALL    prprod      ; prprod(produitC)
+         RET2                ;#eventC 
+fin:     LDA     NULL,i      ; A = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
+         RET2                ; #eventC 
 eventC:  .EQUATE 0 ; #2h 
 NULL:    .EQUATE 0 ; #2d null
 ; ****** Structure event
@@ -235,6 +237,7 @@ errForma:.ASCII  "Erreur de format."
 ;******* operator new 
 ; Precondition: A contains number of bytes
 ; Postcondition: X contains pointer to bytes
+;RETURN A = pointer
 new:     LDX hpPtr,d         ;returned pointer
          ADDA hpPtr,d        ;allocate from heap
          STA hpPtr,d         ;update hpPtr
