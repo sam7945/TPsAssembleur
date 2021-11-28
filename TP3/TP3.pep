@@ -215,7 +215,7 @@ prprod:  SUBSP 6,i ; #prevdstr #preventX #preventA
 ;Cette methode permet d'insérer un évènement dans la liste chainée d'évènement
 ;seulement si celui-ci est conforme. (pas d'erreur de format)
 ;
-;IN : A = Adresse de l'évènement sur le HEAP
+;IN : X = Adresse de l'évènement a inserer
 ;
 inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'erreur de format)
          BREQ    nonConf     ;si non conforme (null), branch fin2
@@ -229,13 +229,14 @@ inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'er
 
 
 nonConf: RET0
-premEven:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
-         LDA     1,i         ;1 est temporaire, on va LDA adresse prec
-         STA     eventC,x
+premEven:STX     debChain,d  ;garde le debut de la chaine dans une variable globale......
+         ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
+         LDA     NULL,i      ;A = NULL
+         STA     eventC,x    ;evenement prec = NULL
          SUBX    evenPr,i
-         ADDX    suivEven,i
-         LDA     2,i         ;2 est temporaire, on va LDA adresse suivante
-         STA     eventC,x
+         ADDX    suivEven,i  ; X = adresse evenement suivant
+         LDA     2,i         ; A = NULL
+         STA     eventC,x    ; evenement suivant = NULL
          RET0
 evenSuiv:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
          LDA     3,i         ;le 3 est temporaire, on va LDA l'adresse prec
@@ -248,16 +249,108 @@ evenSuiv:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
 ;variable locales
 suivEven:.EQUATE 6 
 evenPr:  .EQUATE 8
-compteur:.WORD  0           ;compteur du nombre d'évènement existant dans la liste chainée
+compteur:.WORD   0           ;compteur du nombre d'évènement existant dans la liste chainée
+debChain:.WORD   0
 
 
-;inserer
+;comparer
 ;Cette methode permet d'insérer un évènement dans la liste chainée d'évènement
 ;seulement si celui-ci est conforme. (pas d'erreur de format)
 ;
-;IN : A = Adresse du debut de la liste chaine sur le HEAP
+;IN : X = Adresse de l'objet Evenement a inserer
 ;
-comparer: ;ERROR: Must have mnemonic or dot command after symbol definition.
+comparer:LDA     debChain,d
+         SUBSP   12,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp
+ 
+         ADDA    day,i
+         STA     tempo,d
+         LDA     tempo,n
+         STA     chainJou,s
+         LDA     tempo,d
+         SUBA    day,i
+
+         ADDA    hour,i
+         STA     tempo,d
+         LDA     tempo,n
+         STA     chainHeu,s
+         LDA     tempo,d
+         SUBA    hour,i
+
+         ADDA    time,i
+         STA     tempo,d
+         LDA     tempo,n
+         STA     chainDur,s
+         LDA     tempo,d
+         SUBA    time,i
+
+
+         ADDX    day,i
+         STX     tempo,d
+         LDX     tempo,n
+         STX     jourComp,s
+         LDX     tempo,d
+         SUBX    day,i
+
+         ADDX    hour,i
+         STX     tempo,d
+         LDX     tempo,n
+         STX     heurComp,s
+         LDX     tempo,d
+         SUBX    hour,i
+
+         ADDX    time,i
+         STX     tempo,d
+         LDX     tempo,n
+         STX     dureComp,s
+         LDX     tempo,d
+         SUBX    time,i
+
+compa1:  LDA     jourComp,s
+         CPA     chainJou,s
+         BRLT    preced
+         CPA     chainJou,s
+         BREQ    compa2
+         ;BR      suivant 
+         ADDSP   12,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp 
+         RET0
+compa2:  LDA     heurComp,s
+         ADDA    dureComp,s
+         CPA     chainHeu,s
+         BRLE    preced
+         CPA     chainHeu,s
+         ;BRGT    conflit 
+         ;BREQ    comp3 
+         ;BR      suivant 
+
+preced:  LDA     debChain,d
+         ADDX    6,i
+         STX     newChain,d 
+         STA     newChain,n
+         SUBX    6,i
+         ADDA    8,i
+         STA     debChain,d 
+         STX     debChain,n
+         ADDSP   12,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp
+         RET0
+
+;conflit:
+
+;suivant: 
+         
+;variables locales
+day:     .EQUATE 0
+hour:    .EQUATE 2
+time:    .EQUATE 4
+dureComp:.EQUATE 0           ;#2d
+heurComp:.EQUATE 2           ;#2d
+jourComp:.EQUATE 4           ;#2d
+chainDur:.EQUATE 6           ;#2d
+chainHeu:.EQUATE 8           ;#2d
+chainJou:.EQUATE 10          ;#2d
+next:    .EQUATE 12
+prec:    .EQUATE 14
+newChain:.WORD   0
+tempo:   .WORD   0 
 
 
 
@@ -279,11 +372,11 @@ errForma:.ASCII  "Erreur de format."
 ;******* operator new 
 ; Precondition: A contains number of bytes
 ; Postcondition: X contains pointer to bytes
-;RETURN A = pointer
-new:     LDX hpPtr,d         ;returned pointer
-         ADDA hpPtr,d        ;allocate from heap
-         STA hpPtr,d         ;update hpPtr
+;RETURN X = pointer
+new:     LDX     hpPtr,d         ;returned pointer
+         ADDA    hpPtr,d         ;allocate from heap
+         STA     hpPtr,d         ;update hpPtr
          RET0 
 hpPtr:   .ADDRSS heap        ;address of next free byte 
-heap:    .BLOCK 1            ;first byte in the heap
+heap:    .BLOCK  1            ;first byte in the heap
          .END
