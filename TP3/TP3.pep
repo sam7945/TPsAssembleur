@@ -224,8 +224,8 @@ inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'er
          STA     compteur,d  ;compteur = A
          CPA     1,i         ; if (A == 1) {
          BREQ    premEven    ;    branch fin2 (il n'y a pas d'autres evenements)
-                             ; } else { compare pour l'insertion }
-         BR      suivEven    ; insertion evenement suivant
+         CALL    comparer    ; } else { compare pour l'insertion }
+         BR      evenSuiv    ; insertion evenement suivant
 
 
 nonConf: RET0
@@ -233,24 +233,31 @@ premEven:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
          LDA     1,i         ;1 est temporaire, on va LDA adresse prec
          STA     eventC,x
          SUBX    evenPr,i
-         ADDX    evenSuiv,i
+         ADDX    suivEven,i
          LDA     2,i         ;2 est temporaire, on va LDA adresse suivante
          STA     eventC,x
          RET0
-suivEven:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
+evenSuiv:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
          LDA     3,i         ;le 3 est temporaire, on va LDA l'adresse prec
          STA     eventC,x
          SUBX    evenPr,i
          LDA     3,i         ;3 temporaire, on va LDA l'adresse suivante
-         ADDX    evenSuiv,i
+         ADDX    suivEven,i
          STA     eventC,x
          RET0
 ;variable locales
-evenSuiv:.EQUATE 6
+suivEven:.EQUATE 6 
 evenPr:  .EQUATE 8
 compteur:.WORD  0           ;compteur du nombre d'évènement existant dans la liste chainée
 
 
+;inserer
+;Cette methode permet d'insérer un évènement dans la liste chainée d'évènement
+;seulement si celui-ci est conforme. (pas d'erreur de format)
+;
+;IN : A = Adresse du debut de la liste chaine sur le HEAP
+;
+comparer: ;ERROR: Must have mnemonic or dot command after symbol definition.
 
 
 
