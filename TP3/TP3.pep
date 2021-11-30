@@ -333,22 +333,27 @@ compa2:  LDA     heurComp,s
 
 preced:  LDA     addObjCh,s
          ADDA    6,i         ; A = "objet chaine -> suivant"
-         LDA     addObjCh,sx
-         CPA     0,i
+         STA     addObjCh,s
+         LDA     addObjCh,sx ; A = adresse objet chaine suivant
+         CPA     NULL,i
          BREQ    listPrem 
          BR      listAutr
 
-listPrem:LDX     addNewOb,s 
+listPrem:SUBA    6,i
+         STA     addObjCh,s
+         LDX     addNewOb,s 
          ADDX    6,i         ; nouvel objet[suivant]
-         STX     newChain,d
-         STA     newChain,n  ; "nouvel objet[suivant]" = adresse objet chaine
+         STX     addNewOb,s
+         STA     addNewOb,n  ; "nouvel objet[suivant]" = adresse objet chaine
          SUBX    6,i         ; X = adresse du nouvel objet
          ADDA    8,i         ; A = objet chaine -> precedent
          STA     addObjCh,s  ; addObjCh = A
          STX     addObjCh,n  ; "objet chaine[precedent]" = adresse nouvel objet
          ADDSP   18,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp #nextcomp #addObjCh #addNewOb
          RET0
-listAutr:LDX     addNewOb,s 
+listAutr:SUBA    6,i 
+         STA     addObjCh,s
+         LDX     addNewOb,s 
          ADDX    6,i         ; nouvel objet[suivant]
          STX     addNewOb,s
          STA     addNewOb,n  ; "nouvel objet[suivant]" = adresse objet chaine suivant
