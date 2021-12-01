@@ -270,7 +270,7 @@ debChain:.WORD   0
 ;IN : X = Adresse de l'objet Evenement a inserer
 ;     A = Adresse du début de la liste chainée
 ;
-comparer:SUBSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+comparer:SUBSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          STA     addObjCh,s
          STX     addNewOb,s
  
@@ -326,7 +326,7 @@ compa1:  LDA     jourComp,s
          BREQ    compa2
          BR      suivant
           
-         ;ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+         ;ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
 compa2:  LDA     heurComp,s
          CPA     chainHeu,s
          BREQ    conflit
@@ -372,9 +372,9 @@ listPrem:LDA     addObjCh,s
          STA     addObjCh,s  ; addObjCh = A
          STX     addObjCh,sf  ; "objet chaine[precedent]" = adresse nouvel objet
          STX     debChain,d
-         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+         ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
-listAutr:LDA     addObjCh,s
+listAutr:LDA     addObjCh,s  ;newEvent[suivant]
          SUBA    prec,i
          ;ADDA    prec,i 
          STA     addObjCh,s
@@ -384,29 +384,38 @@ listAutr:LDA     addObjCh,s
          STA     addNewOb,sf  ; "nouvel objet[suivant]" = adresse objet chaine suivant
          SUBX    suiv,i         ; X = adresse du nouvel objet
          STX     addNewOb,s
-
+         ;newEvent[precedent]
          LDX     addNewOb,s
          ADDX    prec,i
          STX     addNewOb,s
          LDA     addObjCh,s
-         SUBA    10,i
+         ADDA    prec,i
+         STA     addObjCh,s
+         LDA     addObjCh,sf
          STA     addNewOb,sf  ; "nouvel objet[precedent]" = adresse objet chaine precedent
-         ADDA    10,i
+         LDA     addObjCh,s
+         SUBA    prec,i
+         STA     addObjCh,s
          SUBX    prec,i
          STX     addNewOb,s
-
+         
+         ;oldEvent[precedent] + oldevent[suivant]
          LDX     addNewOb,s
          LDA     addObjCh,s
+         STA     addTempo,s
          ADDA    prec,i
          STA     addObjCh,s
          STX     addObjCh,sf
-         SUBA    prec,i
-         SUBA    10,i
+         LDA     addNewOb,s
+         ADDA    prec,i
+         STA     addTempo,s
+         LDA     addTempo,sf
          ADDA    suiv,i
-         STA     addObjCh,s
-         STX     addObjCh,sf
+         STA     addTempo,s
+         LDA     addNewOb,s
+         STA     addTempo,sf
 
-         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+         ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo 
          RET0
 listFin: LDA     addObjCh,s
          SUBA    suiv,i
@@ -427,12 +436,12 @@ listFin: LDA     addObjCh,s
          SUBA    suiv,i
          STA     addObjCh,s
 
-         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+         ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
 
 conflit: LDA     NULL,i
          STRO    errHorai,d
-         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+         ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
 
 ;suivant: 
@@ -441,15 +450,16 @@ conflit: LDA     NULL,i
 day:     .EQUATE 0
 hour:    .EQUATE 2
 time:    .EQUATE 4
-dureComp:.EQUATE 16          ;#2d
-heurComp:.EQUATE 14          ;#2d
-jourComp:.EQUATE 12           ;#2d
-chainDur:.EQUATE 10           ;#2d
-chainHeu:.EQUATE 8           ;#2d
-chainJou:.EQUATE 6          ;#2d
-nextcomp:.EQUATE 4          ;#2d
-addObjCh:.EQUATE 2          ;#2d
-addNewOb:.EQUATE 0          ;#2d
+dureComp:.EQUATE 18          ;#2d
+heurComp:.EQUATE 16          ;#2d
+jourComp:.EQUATE 14           ;#2d
+chainDur:.EQUATE 12           ;#2d
+chainHeu:.EQUATE 10           ;#2d
+chainJou:.EQUATE 8          ;#2d
+nextcomp:.EQUATE 6          ;#2d
+addObjCh:.EQUATE 4          ;#2d
+addNewOb:.EQUATE 2          ;#2d
+addTempo:.EQUATE 0          ;#2d
 suiv:    .EQUATE 6
 prec:    .EQUATE 8
 newChain:.WORD   0
