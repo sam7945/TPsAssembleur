@@ -229,8 +229,10 @@ inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'er
          STA     compteur,d  ;compteur = A
          CPA     1,i         ; if (A == 1) {
          BREQ    premEven    ;    branch fin2 (il n'y a pas d'autres evenements)
+         CPA     1,i
+         BRGT    evenSuiv
          CALL    comparer    ; } else { compare pour l'insertion }
-         BR      evenSuiv    ; insertion evenement suivant
+         ;BR      evenSuiv    ; insertion evenement suivant
 
 
 nonConf: RET0
@@ -240,10 +242,11 @@ premEven:STX     debChain,d  ;garde le debut de la chaine dans une variable glob
          STA     eventC,x    ;evenement prec = NULL
          SUBX    evenPr,i
          ADDX    suivEven,i  ; X = adresse evenement suivant
-         LDA     2,i         ; A = NULL
+         LDA     NULL,i         ; A = NULL
          STA     eventC,x    ; evenement suivant = NULL
          RET0
-evenSuiv:ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
+evenSuiv:LDA     newChain,d
+         ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
          LDA     3,i         ;le 3 est temporaire, on va LDA l'adresse prec
          STA     eventC,x
          SUBX    evenPr,i
@@ -265,9 +268,9 @@ debChain:.WORD   0
 ;IN : X = Adresse de l'objet Evenement a inserer
 ;
 comparer:LDA     heap,i
+         SUBSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
          STA     addObjCh,s
          STX     addNewOb,s
-         SUBSP   18,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp #nextcomp #addObjCh #addNewOb
  
          ADDX    day,i
          STX     tempo,d
@@ -319,9 +322,9 @@ compa1:  LDA     jourComp,s
          BRLT    preced
          CPA     chainJou,s
          BREQ    compa2
-         ;BR      suivant 
-         ADDSP   18,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp #nextcomp #addObjCh #addNewOb 
-         RET0
+         ;LDA
+         BR      suivant 
+         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
 compa2:  LDA     heurComp,s
          ADDA    dureComp,s
          CPA     chainHeu,s
@@ -332,60 +335,85 @@ compa2:  LDA     heurComp,s
          ;BR      suivant 
 
 preced:  LDA     addObjCh,s
-         ADDA    6,i         ; A = "objet chaine -> suivant"
+         ADDA    8,i         ; A = "objet chaine -> precedent"
          STA     addObjCh,s
-         LDA     addObjCh,sx ; A = adresse objet chaine suivant
+         LDA     addObjCh,sxf ; A = adresse objet chaine precedent
          CPA     NULL,i
          BREQ    listPrem 
          BR      listAutr
+suivant: LDA     addObjCh,s
+         ADDA    6,i
+         STA     addObjCh,s
+         LDA     addObjCh,sxf
+         CPA     NULL,i
+         BREQ    listFin
 
-listPrem:SUBA    6,i
+listPrem:LDA     addObjCh,s
+         SUBA    8,i
          STA     addObjCh,s
          LDX     addNewOb,s 
          ADDX    6,i         ; nouvel objet[suivant]
          STX     addNewOb,s
-         STA     addNewOb,n  ; "nouvel objet[suivant]" = adresse objet chaine
+         STA     addNewOb,sf  ; "nouvel objet[suivant]" = adresse objet chaine
          SUBX    6,i         ; X = adresse du nouvel objet
          ADDA    8,i         ; A = objet chaine -> precedent
          STA     addObjCh,s  ; addObjCh = A
-         STX     addObjCh,n  ; "objet chaine[precedent]" = adresse nouvel objet
-         ADDSP   18,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp #nextcomp #addObjCh #addNewOb
+         STX     addObjCh,sf  ; "objet chaine[precedent]" = adresse nouvel objet
+         STX     newChain,d
+         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
          RET0
-listAutr:SUBA    6,i 
+listAutr:SUBA    8,i 
          STA     addObjCh,s
          LDX     addNewOb,s 
          ADDX    6,i         ; nouvel objet[suivant]
          STX     addNewOb,s
-         STA     addNewOb,n  ; "nouvel objet[suivant]" = adresse objet chaine suivant
+         STA     addNewOb,sf  ; "nouvel objet[suivant]" = adresse objet chaine suivant
          SUBX    6,i         ; X = adresse du nouvel objet
-         ADDX    8,i
 
          LDX     addNewOb,s
          ADDX    8,i
          STX     addNewOb,s
          LDA     addObjCh,s
          SUBA    10,i
-         ADDA    8,i
-         STA     addNewOb,n  ; "nouvel objet[precedent]" = adresse objet chaine precedent
+         STA     addNewOb,sf  ; "nouvel objet[precedent]" = adresse objet chaine precedent
+         ADDA    10,i
+         SUBX    8,i
+         STX     addNewOb,s
 
          LDX     addNewOb,s
          LDA     addObjCh,s
          ADDA    8,i
          STA     addObjCh,s
-         STX     addObjCh,n
+         STX     addObjCh,sf
          SUBA    8,i
          SUBA    10,i
          ADDA    6,i
          STA     addObjCh,s
-         STX     addObjCh,n
-         
+         STX     addObjCh,sf
 
-         ADDA    8,i         ; A = objet chaine -> precedent
-         STA     addObjCh,s  ; addObjCh = A
-         STX     addObjCh,n  ; "objet chaine[precedent]" = adresse nouvel objet
-         ADDSP   18,i        ; #chainJou #chainHeu #chainDur #jourComp #heurComp #dureComp #nextcomp #addObjCh #addNewOb
+         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
          RET0
+listFin: LDA     addObjCh,s
+         SUBA    6,i
+         STA     addObjCh,s
+         LDA     NULL,i
+         LDX     addNewOb,s
+         ADDX    6,i
+         STX     addNewOb,s
+         STA     addNewOb,sf
+         SUBX    6,i
+         STX     addNewOb,s
 
+         LDA     addObjCh,s
+         ADDA    6,i
+         STA     addObjCh,s
+         LDX     addNewOb,s
+         STX     addObjCh,sf
+         SUBA    6,i
+         STA     addObjCh,s
+
+         ADDSP   18,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb
+         RET0
 ;conflit:
 
 ;suivant: 
@@ -394,15 +422,15 @@ listAutr:SUBA    6,i
 day:     .EQUATE 0
 hour:    .EQUATE 2
 time:    .EQUATE 4
-dureComp:.EQUATE 0           ;#2d
-heurComp:.EQUATE 2           ;#2d
-jourComp:.EQUATE 4           ;#2d
-chainDur:.EQUATE 6           ;#2d
+dureComp:.EQUATE 16          ;#2d
+heurComp:.EQUATE 14          ;#2d
+jourComp:.EQUATE 12           ;#2d
+chainDur:.EQUATE 10           ;#2d
 chainHeu:.EQUATE 8           ;#2d
-chainJou:.EQUATE 10          ;#2d
-nextcomp:.EQUATE 12          ;#2d
-addObjCh:.EQUATE 14          ;#2d
-addNewOb:.EQUATE 16          ;#2d
+chainJou:.EQUATE 6          ;#2d
+nextcomp:.EQUATE 4          ;#2d
+addObjCh:.EQUATE 2          ;#2d
+addNewOb:.EQUATE 0          ;#2d
 prec:    .EQUATE 14
 newChain:.WORD   0
 tempo:   .WORD   0 
