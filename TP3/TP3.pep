@@ -478,7 +478,7 @@ sollHeur:.ASCII  "Heure de début : \x00"
 sollDure:.ASCII  "Durée : \x00"
 errForma:.ASCII  "Erreur de format."
          .ASCII  "\n \x00"
-errHorai:.ASCII  "la planification de cet evenement est impossible en raison d'un conflit d'horaire\x00"
+errHorai:.ASCII  "la planification de cet evenement est impossible en raison d'un conflit d'horaire. \n\x00"
 
 
 
