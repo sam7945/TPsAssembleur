@@ -234,13 +234,8 @@ inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'er
          STA     compteur,d  ;compteur = A
          CPA     1,i         ; if (A == 1) {
          BREQ    premEven    ;    branch fin2 (il n'y a pas d'autres evenements)
-         ;CPA     1,i
-         ;BRGT    evenSuiv
          LDA     debChain,d
          CALL    comparer    ; } else { compare pour l'insertion }
-         ;BR      evenSuiv    ; insertion evenement suivant
-
-
 nonConf: LDA     0,i
          RET0
 premEven:STX     debChain,d  ;garde le debut de la chaine dans une variable globale......
@@ -252,15 +247,6 @@ premEven:STX     debChain,d  ;garde le debut de la chaine dans une variable glob
          LDA     NULL,i         ; A = NULL
          STA     eventC,x    ; evenement suivant = NULL
          RET0
-;evenSuiv:LDA     newChain,d
-;         ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
- ;        LDA     3,i         ;le 3 est temporaire, on va LDA l'adresse prec
-  ;       STA     eventC,x
-   ;      SUBX    evenPr,i
-    ;     LDA     3,i         ;3 temporaire, on va LDA l'adresse suivante
-     ;    ADDX    suivEven,i
-      ;   STA     eventC,x
-       ;  RET0
 ;variable locales
 suivEven:.EQUATE 6 
 evenPr:  .EQUATE 8
@@ -321,17 +307,13 @@ loop:    ADDX    day,i
          LDA     tempo,d
          SUBA    time,i
 
-         ;LDA     addObjCh,s
-         ;BR      compa1
-
 compa1:  LDA     jourComp,s
          CPA     chainJou,s
          BRLT    preced
          CPA     chainJou,s
          BREQ    compa2
          BR      suivant
-          
-         ;ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
+
 compa2:  LDA     heurComp,s
          CPA     chainHeu,s
          BREQ    conflit
@@ -341,6 +323,7 @@ compa2:  LDA     heurComp,s
 veriMoin:ADDA    dureComp,s
          CPA     chainHeu,s
          BRGT    conflit
+         BR      suivant
 veriPlus:LDA     chainHeu,s
          ADDA    chainDur,s
          CPA     heurComp,s 
