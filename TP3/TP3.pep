@@ -22,70 +22,74 @@ agenda:  call    saisir      ;Appel de la fonction saisir
 ;Saisir permet à l'utilisateur d'entrer l'information sur un seul évènement. La fonction
 ;Quitter permet d'arrêter la saisie de nouveau évènements.
 ;
-saisir:  STRO    menu,d      ;affiche le menu de saisi
-         subsp   variable,i  ;allocate #optMen
+saisir:  STRO    menu,d      ;    Print( menu )
+         subsp   variable,i  ;    allocation pile #optMen
          lda     0,i
          ldx     0,i
-         CHARI   optMen,s    ;assigne le choix de l'utilisateur a l'adresse pile optMen
-         LDBYTEX optMen,s    ;assigne le choix de l'utilisateur au registre x
-cp:      CPX     '\n',i      ;if (x  == '\n' ) {
-         BREQ    nextChar    ;    branch nextchar
-         CPX     '1',i       ;} else if ( x == 1 ) {
-         BREQ    nextEven    ;    branch "nexteven 
-         CPX     '2',i       ;} else if ( x == 2 ) {
-         BREQ    quitMenu    ;    branch "quitmenu"
-         STRO    errMenu,d   ;} else {    print(errMenu)
-         addsp   variable,i  ;dealocate #optMen
-         br      saisir      ;    branch "saisir" }
-nextChar:CHARI   0,s         ;prochain char
-         LDBYTEX 0,s         ;load le char dans X
-         br      cp          ;branch cp
-nextEven:CALL    creer       ;call creer()
-         CALL    inserer     ;call inserer() 
-         ADDSP   variable,i  ;deallocate #optMen
+         CHARI   optMen,s    ;    Sollicitation optMen
+         LDBYTEX optMen,s    ;    X = optMen
+cp:      CPX     '\n',i      ;    if (x  == '\n' ) {
+         BREQ    nextChar    ;        branch nextchar
+         CPX     '1',i       ;    } else if ( x == 1 ) {
+         BREQ    nextEven    ;        branch "nexteven 
+         CPX     '2',i       ;    } else if ( x == 2 ) {
+         BREQ    quitMenu    ;        branch "quitmenu"
+         STRO    errMenu,d   ;    } else {    Print(errMenu)
+         addsp   variable,i  ;        dealocate #optMen
+         br      saisir      ;        branch "saisir" }
+nextChar:CHARI   0,s         ;    prochain caractere
+         LDBYTEX 0,s         ;    X = optMen
+         br      cp          ;    branch cp
+nextEven:CALL    creer       ;    call creer()
+         CALL    inserer     ;    call inserer() 
+         ADDSP   variable,i  ;    desalocation pile #optMen
          BR      saisir          
-quitMenu:addsp   variable,i  ;deallocate #optMen
+quitMenu:addsp   variable,i  ;    desalocation pile #optMen
          RET0                ;Retourne à agenda et quitte 
-
-optMen:  .EQUATE 0           ;local variable #2d
+;Variables Locales
+optMen:  .EQUATE 0           ;#2d
 variable:.EQUATE 2           
 
 
 ;creer
-;Cette methode permet de creer un nouvel objet evenement.
+;Cette methode permet de saisir les donnees sur un nouvel evenement soit
+;le jour, l'heure et la duree. Si les donnees sont conformes, l'objet est
+;cree.
+;OUT: X = adresse d'un maillon evenement
 ;
-creer:   SUBSP   2,i         ; #eventC 
-         LDA     10,i 
-         CALL    new         ; eventC = malloc(10) #prJour #prDebut #prDuree #prSuiv #prPrec
+creer:   SUBSP   2,i         ;    allocation pile #eventC 
+         LDA     adrObj,i    ;    A = adrObj 
+         CALL    new         ;    eventC = malloc(10) #prJour #prDebut #prDuree #prSuiv #prPrec
          LDA     0,i 
-         STX     eventC,s
+         STX     eventC,s    ;    eventC = adresse du nouvel objet
          CALL    evenJour
-         CPA     NULL,i
-         BREQ    fin 
-         STA     prJour,x    ; eventC->jour = 3;LDA     0,i 
+         CPA     NULL,i      ;    if ( A == NULL ) {
+         BREQ    fin         ;        branch "fin" }
+         STA     prJour,x    ;    eventC[jour] = A
+         LDA     0,i
          CALL    evenHeur
-         CPA     NULL,i
-         BREQ    fin
-         STA     prDebut,x   ; eventC->debut = 1995;
+         CPA     NULL,i      ;    if ( A == NULL ) {
+         BREQ    fin         ;        branch "fin" }
+         STA     prDebut,x   ;    eventC[debut] = A
          LDA     0,i
          CALL    evenDure
-         CPA     NULL,i
-         BREQ    fin         
-         STA     prDuree,x   ; eventC->durée = 2004;
-         LDA     NULL,i
-         STA     prSuiv,x    ; eventC->suivent = NULL
-         STA     prPrec,x    ; eventC->precedent=NULL
-         LDX     eventC,s    ; X = addresse eventC (retourne l'adresse de l'évènement)
-         CALL    prprod      ; prprod(produitC)
-         RET2                ;#eventC 
-fin:     LDA     NULL,i
-         STA     prJour,x
-         STA     prDebut,x
-         STA     prDuree,x
-         STA     prSuiv,x
-         STA     prPrec,x
-         LDX     NULL,i      ; X = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
-         RET2                ; #eventC 
+         CPA     NULL,i      ;    if ( A == NULL ) {
+         BREQ    fin         ;        branch "fin" }
+         STA     prDuree,x   ;    eventC[durée] = A
+         LDA     NULL,i      ;    A = NULL
+         STA     prSuiv,x    ;    eventC[suivant] = NULL
+         STA     prPrec,x    ;    eventC[precedent] = NULL
+         LDX     eventC,s    ;    X = addresse eventC
+         CALL    prprod      ;    prprod(produitC)
+         RET2                ;    Desallocation pile #eventC 
+fin:     LDA     NULL,i      ;    A = NULL
+         STA     prJour,x    ;    prJour = A
+         STA     prDebut,x   ;    prDebut = A
+         STA     prDuree,x   ;    prDuree = A
+         STA     prSuiv,x    ;    prSuiv = A
+         STA     prPrec,x    ;    prPrec = A
+         LDX     NULL,i      ;    X = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
+         RET2                ;    Desallocation pile #eventC 
 eventC:  .EQUATE 0 ; #2h 
 NULL:    .EQUATE 0 ; #2d null
 ; ****** Structure event
@@ -94,6 +98,7 @@ prDebut: .EQUATE 2 ; #2d heure de début
 prDuree: .EQUATE 4 ; #2d durée
 prSuiv:  .EQUATE 6 ; #2h pointeur vers le suivent
 prPrec:  .EQUATE 8 ; #2h pointeur vers le précédent
+adrObj:  .EQUATE 10
 
 
 
@@ -104,21 +109,21 @@ prPrec:  .EQUATE 8 ; #2h pointeur vers le précédent
 ;Cette methode fait la sollicitation du Jour pour la creation d'un evenement.
 ;OUT : A = jour
 ;
-evenJour:STRO    sollJour,d  ;Print(sollJour)
-         SUBSP   resJour,i   ;#resJour 
-         DECI    spJour,s    ;assigne le choix de l'utilisateur a la pile spJour
-         LDA     spJour,s    ;
-         CPA     minJour,i   ;compare au jour minimum (lundi)
-         BRLT    errJour
-         CPA     maxJour,i   ;compare au jour maximum (dimanche)
-         BRGT    errJour
-         ADDSP   resJour,i   ;#resJour
+evenJour:STRO    sollJour,d  ;    Print(sollJour)
+         SUBSP   resJour,i   ;    allocation pile #resJour 
+         DECI    spJour,s    ;    spJour = choix utilisateur
+         LDA     spJour,s    ;    A = spJour
+         CPA     minJour,i   ;    if ( A < 1 ) {
+         BRLT    errJour     ;        branch "errJour" 
+         CPA     maxJour,i   ;    } else if ( A > 7 ) {
+         BRGT    errJour     ;        branch "errJour" }
+         ADDSP   resJour,i   ;    desalocation pile #resJour
          RET0
-errJour: STRO    errForma,d  ;Print(errForma)
-         LDA     NULL,i
-         ADDSP   resJour,i   ;#resJour
+errJour: STRO    errForma,d  ;    Print(errForma)
+         LDA     NULL,i      ;    A = NULL
+         ADDSP   resJour,i   ;    desallocation pile #resJour
          RET0
-;variable locale
+;variables locales
 spJour:  .EQUATE 0           ;#2d
 resJour: .EQUATE 2           ;#2d
 minJour: .EQUATE 1
@@ -128,19 +133,19 @@ maxJour: .EQUATE 7
 ;Cette methode fait la sollicitation de l'Heure/minutes de debut pour la creation d'un evenement.
 ;OUT : A = heure/minute
 ;
-evenHeur:STRO    sollHeur,d  ;Print(sollHeur) 
-         SUBSP   resHeure,i  ;#resHeure
-         DECI    spHeure,s   ;assigne le choix de l'utilisateur a la pile spHeur
-         LDA     spHeure,s   ;
-         CPA     minHeur,i   ;compare aux heures/minutes minimum (1)
-         BRLT    errHeure
-         CPA     maxHeur,i   ;compare aux heures/minutes maximum (1440)
-         BRGT    errHeure
-         ADDSP   resHeure,i  ;#resHeure
+evenHeur:STRO    sollHeur,d  ;    Print(sollHeur) 
+         SUBSP   resHeure,i  ;    allocation pile #resHeure
+         DECI    spHeure,s   ;    spHeure = choix utilisateur
+         LDA     spHeure,s   ;    A = spHeure
+         CPA     minHeur,i   ;    if ( A < 1 ) {
+         BRLT    errHeure    ;        branch "errHeure"
+         CPA     maxHeur,i   ;    } else if ( A > 1440 ) {
+         BRGT    errHeure    ;        branch "errHeure" }
+         ADDSP   resHeure,i  ;    Desallocation pile #resHeure
          RET0
-errHeure:STRO    errForma,d  ;Print(errForma)
-         LDA     NULL,i
-         ADDSP   resHeure,i  ;#resHeure
+errHeure:STRO    errForma,d  ;    Print(errForma)
+         LDA     NULL,i      ;    A = NULL
+         ADDSP   resHeure,i  ;    Desallocation pile #resHeure
          RET0
 ;variable locale
 spHeure: .EQUATE 0           ;#2d
@@ -152,19 +157,19 @@ maxHeur: .EQUATE 1440
 ;Cette methode fait la sollicitation de l'Heure/minutesde duree pour la creation d'un evenement.
 ;OUT : A = heure/minute
 ;
-evenDure:STRO    sollDure,d  ;Print(sollDure)
-         SUBSP   resDuree,i  ;#resDuree
-         DECI    spDuree,s   ;assigne le choix de l'utilisateur a la pile spDuree
-         LDA     spDuree,s   ;
-         CPA     minDuree,i  ;compare aux heures/minutes minimum (1)
-         BRLT    errDuree
-         CPA     maxDuree,i  ;compare aux heures/minutes maximum (1440)
-         BRGT    errDuree
-         ADDSP   resDuree,i  ;#resDuree
+evenDure:STRO    sollDure,d  ;    Print(sollDure)
+         SUBSP   resDuree,i  ;    Allocation pile #resDuree
+         DECI    spDuree,s   ;    spDuree = choix utilisateur
+         LDA     spDuree,s   ;    A = spDuree
+         CPA     minDuree,i  ;    if ( A < 1 ) {
+         BRLT    errDuree    ;        branch "errDuree"
+         CPA     maxDuree,i  ;    } else if ( A > 1440 ) {
+         BRGT    errDuree    ;        branch "errDuree"
+         ADDSP   resDuree,i  ;    Desallocation pile #resDuree
          RET0
-errDuree:STRO    errForma,d  ;Print(errForma)
-         LDA     NULL,i
-         ADDSP   resDuree,i  ;#resDuree
+errDuree:STRO    errForma,d  ;    Print(errForma)
+         LDA     NULL,i      ;    A = NULL
+         ADDSP   resDuree,i  ;    Desallocation pile #resDuree
          ret0
 ;variable locale
 spDuree: .EQUATE 0           ;#2d
