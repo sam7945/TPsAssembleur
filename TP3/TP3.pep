@@ -80,8 +80,7 @@ creer:   SUBSP   2,i         ;    allocation pile #eventC
          LDA     NULL,i      ;    A = NULL
          STA     prSuiv,x    ;    eventC[suivant] = NULL
          STA     prPrec,x    ;    eventC[precedent] = NULL
-         LDX     eventC,s    ;    X = addresse eventC
-         CALL    prprod      ;    prprod(produitC)
+         LDX     eventC,s    ;    X = addresse eventC 
          RET2                ;    Desallocation pile #eventC 
 fin:     LDA     NULL,i      ;    A = NULL
          STA     prJour,x    ;    prJour = A
@@ -177,49 +176,6 @@ spDuree: .EQUATE 0           ;#2d
 resDuree:.EQUATE 2           ;#2d
 minDuree:.EQUATE 1
 maxDuree:.EQUATE 1440
-
-
-
-
-
-
-
-
-
-; ****** prprod: Affiche un produit 
-; IN A=adresse de event (#2h)
-preventA: .EQUATE 0 ; #2h paramètre A
-preventX: .EQUATE 2 ; #2h sauve X
-prevdstr: .EQUATE 4 ; #2h adresse du nom du produit (pour STRO)
-prprod:  SUBSP 6,i ; #prevdstr #preventX #preventA
-         STA preventA,s ; range A 
-         STX preventX,s ; sauve X
-         LDX prJour,i 
-         DECO preventA,sxf ; print(prprodA->prJour) 
-         CHARO ':',i ; print(":")
-
-         LDX prDebut,i 
-         DECO preventA,sxf ; print(prprodA->prDebut) 
-         CHARO ':',i ; print(":")
-
-         LDX prDuree,i 
-         DECO preventA,sxf ; print(prprodA->prDuree) 
-         CHARO ':',i ; print(":")
-
-         LDX prSuiv,i 
-         DECO preventA,sxf ; print(prprodA->prSuiv) 
-         CHARO ':',i ; print(":")
-
-         LDX prPrec,i 
-         DECO preventA,sxf ; print(prprodA->prPrec) 
-
-         
-         CHARO '\n',i ; print("\n")
-         LDA preventA,s ; restaure A
-         LDX preventX,s ; restaure X
-         RET6 ; #prevdstr #preventX #preventA
-
-
 
 
 ;inserer
