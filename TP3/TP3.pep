@@ -5,15 +5,16 @@
 ; Ce programme gère un agenda hebdomadaire des évènements
 
 
-         call    agenda
+         CALL    agenda
+         CALL    affAgd
 
          STOP
 
 ;Event*
 
 
-agenda:  call    saisir      ;Appel de la fonction saisir
-         ret0 
+agenda:  CALL    saisir      ;Appel de la fonction saisir
+         RET0 
          
          
 
@@ -150,7 +151,7 @@ errHeure:STRO    errForma,d  ;    Print(errForma)
 ;variable locale
 spHeure: .EQUATE 0           ;#2d
 resHeure:.EQUATE 2           ;#2d
-minHeur: .EQUATE 1
+minHeur: .EQUATE 0
 maxHeur: .EQUATE 1440
 
 ;evenDure
@@ -238,7 +239,7 @@ inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'er
          CALL    comparer    ; } else { compare pour l'insertion }
 nonConf: LDA     0,i
          RET0
-premEven:STX     debChain,d  ;garde le debut de la chaine dans une variable globale......
+premEven:STX     debChain,d  ; X = debChain
          ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
          LDA     NULL,i      ;A = NULL
          STA     eventC,x    ;evenement prec = NULL
@@ -264,7 +265,6 @@ debChain:.WORD   0
 comparer:SUBSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          STA     addObjCh,s
          STX     addNewOb,s
- 
 loop:    ADDX    day,i
          STX     tempo,d
          LDX     tempo,n
@@ -313,7 +313,6 @@ compa1:  LDA     jourComp,s
          CPA     chainJou,s
          BREQ    compa2
          BR      suivant
-
 compa2:  LDA     heurComp,s
          CPA     chainHeu,s
          BREQ    conflit
@@ -346,8 +345,6 @@ suivant: LDA     addObjCh,s
          BREQ    listFin
          STA     addObjCh,s
          BR      loop
-
-
 listPrem:LDA     addObjCh,s
          SUBA    prec,i
          STA     addObjCh,s
@@ -431,10 +428,7 @@ conflit: LDA     NULL,i
          STRO    errHorai,d
          ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
-
-;suivant: 
-         
-;variables locales
+         ;variables locales
 day:     .EQUATE 0
 hour:    .EQUATE 2
 time:    .EQUATE 4
@@ -455,6 +449,141 @@ tempo:   .WORD   0
 
 
 
+;affAgd
+;Cette methode permet d'afficher les evenements de l'agenda en
+;ordre chronologique.
+;IN : debChain = Adresse du premier évènement
+;
+affAgd:  LDA     debChain,d
+         SUBSP   4,i         ; #addrEv #tempo1
+loop2:   STA     addrEv,s         ;store l'adresse de l'evenement dans la pile
+         CHARO   '\n',i
+         CALL    affiJour
+         CALL    affiHeur 
+         CALL    affiDure 
+
+         LDA     addrEv,s
+         ADDA    addrSuiv,i
+         STA     tempo1,s
+         LDX     tempo1,sf
+         CPX     NULL,i
+         BREQ    fin2
+         LDA     tempo1,sf
+         BR      loop2
+
+fin2:    ADDSP   4,i         ; #addrEv #tempo1
+         RET0
+;Variable Locale
+addrEv:  .EQUATE 2           ; #2d
+tempo1:  .EQUATE 0           ; #2d
+addrSuiv:.EQUATE 6
+
+
+
+;affiJour
+;Cette methode permet d'afficher le jour de l'evenement.
+;IN : A = adresse de l'evenement.
+;         
+affiJour:SUBSP   2,i         ; Allocation de la pile #jour1
+         STA     jour1,s     ; Store l'adresse evenement[jour] dans la pile 
+         LDX     jour1,sf    ; X = evenement[jour]
+         CPX     1,i
+         BREQ    lun
+         CPX     2,i
+         BREQ    mar
+         CPX     3,i
+         BREQ    mer
+         CPX     4,i
+         BREQ    jeu
+         CPX     5,i
+         BREQ    ven
+         CPX     6,i
+         BREQ    sam
+         CPX     7,i
+         BREQ    dim
+lun:     STRO    lundi,d
+         ADDSP   2,i         ; #jour1
+         RET0
+mar:     STRO    mardi,d
+         ADDSP   2,i         ; #jour1
+         RET0
+mer:     STRO    mercredi,d
+         ADDSP   2,i         ; #jour1
+         RET0
+jeu:     STRO    jeudi,d
+         ADDSP   2,i         ; #jour1
+         RET0
+ven:     STRO    vendredi,d
+         ADDSP   2,i         ; #jour1
+         RET0
+sam:     STRO    samedi,d
+         ADDSP   2,i         ; #jour1
+         RET0
+dim:     STRO    dimanche,d
+         ADDSP   2,i         ; #jour1
+         RET0
+;Variable Locale
+jour1:   .EQUATE 0           ; #2d
+
+;affiHeur
+;Cette methode permet d'afficher l'heure du debut de l'evenement.
+;IN : A = adresse de l'evenement.
+;         
+affiHeur:SUBSP   8,i         ; Allocation de la pile #heure1 #comptr #minute #addeven1
+         STA     addeven1,s
+         ADDA    posHeure,i
+         STA     heure1,s    ; Store l'adresse evenement[heure] dans la pile 
+         LDX     heure1,sf   ; X = evenement[heure]
+         LDA     0,i
+loop3:   SUBX    minuHeur,i
+         ADDA    1,i
+         STA     comptr,s
+         CPX     minuHeur,i
+         BRGE    loop3
+         STX     minute,s
+         DECO    comptr,s
+         STRO    h,d
+         DECO    minute,s
+         CHARO   ' ',i 
+         LDA     addeven1,s     
+         ADDSP   8,i         ; #heure1 #comptr #minute #addeven1 
+         RET0
+;Variable Locale
+heure1:  .EQUATE 6           ; #2d
+comptr:  .EQUATE 4           ; #2d
+minute:  .EQUATE 2           ; #2d
+addeven1:.EQUATE 0           ; #2d
+minuHeur:.EQUATE 60
+posHeure:.EQUATE 2
+
+;affiDure
+;Cette methode permet d'afficher la duree de l'evenement.
+;IN : A = adresse de l'evenement.
+;         
+affiDure:SUBSP   6,i         ; Allocation de la pile #duree1 #comptr2 #minute2
+         ADDA    posDuree,i
+         STA     duree1,s    ; Store l'adresse evenement[heure] dans la pile 
+         LDX     duree1,sf   ; X = evenement[heure]
+         LDA     0,i
+loop4:   SUBX    minuHr,i 
+         ADDA    1,i
+         STA     comptr2,s
+         CPX     minuHr,i
+         BRGE    loop4
+         STX     minute2,s
+         DECO    comptr2,s
+         STRO    h,d
+         DECO    minute2,s      
+         ADDSP   6,i         ; #heure1 #comptr #minute 
+         RET0
+;Variable Locale
+duree1:  .EQUATE 4           ; #2d
+comptr2: .EQUATE 2           ; #2d
+minute2: .EQUATE 0           ; #2d
+minuHr:  .EQUATE 60 
+posDuree:.EQUATE 4
+
+
 menu:    .ASCII  " ****************** "
          .ASCII  "\n * [1]-Saisir     * "
          .ASCII  "\n * [2]-Quitter    *" 
@@ -467,7 +596,14 @@ sollDure:.ASCII  "Durée : \x00"
 errForma:.ASCII  "Erreur de format."
          .ASCII  "\n \x00"
 errHorai:.ASCII  "la planification de cet evenement est impossible en raison d'un conflit d'horaire. \n\x00"
-
+lundi:   .ASCII  "Lundi \x00"
+mardi:   .ASCII  "Mardi \x00"
+mercredi:.ASCII  "Mercredi \x00"
+jeudi:   .ASCII  "Jeudi \x00"
+vendredi:.ASCII  "Vendredi \x00"
+samedi:  .ASCII  "Samedi \x00"
+dimanche:.ASCII  "Dimanche \x00"
+h:       .ASCII  "H\x00"
 
 
 
