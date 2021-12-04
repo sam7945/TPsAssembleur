@@ -491,9 +491,11 @@ affiHeur:SUBSP   8,i         ; Allocation de la pile #heure1 #comptr #minute #ad
          STA     heure1,s    ; Store l'adresse evenement[heure] dans la pile 
          LDX     heure1,sf   ; X = evenement[heure]
          LDA     0,i
+         CPX     60,i
+         BRLT    skip
 loop3:   SUBX    minuHeur,i
          ADDA    1,i
-         STA     comptr,s
+skip:    STA     comptr,s
          CPX     minuHeur,i
          BRGE    loop3
          STX     minute,s
@@ -521,9 +523,11 @@ affiDure:SUBSP   6,i         ; Allocation de la pile #duree1 #comptr2 #minute2
          STA     duree1,s    ; Store l'adresse evenement[heure] dans la pile 
          LDX     duree1,sf   ; X = evenement[heure]
          LDA     0,i
-loop4:   SUBX    minuHr,i 
+         CPX     60,i
+         BRLT    skip1
+loop4:   SUBX    minuHr,i
          ADDA    1,i
-         STA     comptr2,s
+skip1:   STA     comptr2,s
          CPX     minuHr,i
          BRGE    loop4
          STX     minute2,s
