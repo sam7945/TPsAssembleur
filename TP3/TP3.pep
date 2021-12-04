@@ -69,12 +69,12 @@ creer:   SUBSP   2,i         ;    allocation pile #eventC
          STA     prJour,x    ;    eventC[jour] = A
          LDA     0,i
          CALL    evenHeur
-         CPA     NULL,i      ;    if ( A == NULL ) {
-         BREQ    fin         ;        branch "fin" }
+         CPA     NULL,i      ;    if ( A < 0 ) {
+         BRLT    fin         ;        branch "fin" }
          STA     prDebut,x   ;    eventC[debut] = A
          LDA     0,i
          CALL    evenDure
-         CPA     NULL,i      ;    if ( A == NULL ) {
+         CPA     NULL,i      ;    if ( A < 0 ) {
          BREQ    fin         ;        branch "fin" }
          STA     prDuree,x   ;    eventC[durée] = A
          LDA     NULL,i      ;    A = NULL
