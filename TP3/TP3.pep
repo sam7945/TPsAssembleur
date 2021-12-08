@@ -70,12 +70,14 @@ creer:   SUBSP   2,i         ;    allocation pile #eventC
          STA     prJour,x    ;    eventC[jour] = A
          LDA     0,i
          CALL    evenHeur
-         CPA     NULL,i      ;    if ( A < 0 ) {
+         CPA     0,i         ;    if ( A < 0 ) {
          BRLT    fin         ;        branch "fin" }
+         CPA     1440,i      ;    } else if ( A > 1440 )
+         BRGT    fin         ;        branch "fin" }
          STA     prDebut,x   ;    eventC[debut] = A
          LDA     0,i
          CALL    evenDure
-         CPA     NULL,i      ;    if ( A < 0 ) {
+         CPA     NULL,i      ;    if ( A == 0 ) {
          BREQ    fin         ;        branch "fin" }
          STA     prDuree,x   ;    eventC[durée] = A
          LDA     NULL,i      ;    A = NULL
@@ -138,14 +140,13 @@ evenHeur:STRO    sollHeur,d  ;    Print(sollHeur)
          SUBSP   resHeure,i  ;    allocation pile #resHeure
          DECI    spHeure,s   ;    spHeure = choix utilisateur
          LDA     spHeure,s   ;    A = spHeure
-         CPA     minHeur,i   ;    if ( A < 1 ) {
+         CPA     minHeur,i   ;    if ( A < 0 ) {
          BRLT    errHeure    ;        branch "errHeure"
          CPA     maxHeur,i   ;    } else if ( A > 1440 ) {
          BRGT    errHeure    ;        branch "errHeure" }
          ADDSP   resHeure,i  ;    Desallocation pile #resHeure
          RET0
 errHeure:STRO    errForma,d  ;    Print(errForma)
-         LDA     NULL,i      ;    A = NULL
          ADDSP   resHeure,i  ;    Desallocation pile #resHeure
          RET0
 ;variable locale
@@ -244,65 +245,62 @@ loop:    ADDX    day,i       ;    X += day
          LDX     tempo,d     ;    X = evenement[duree]
          SUBX    time,i      ;    X = adresse Evenement
 
-         ADDA    day,i
-         STA     tempo,d
-         LDA     tempo,n
-         STA     chainJou,s
-         LDA     tempo,d
-         SUBA    day,i
+         ADDA    day,i       ;    A += day
+         STA     tempo,d     ;    tempo = A
+         LDA     tempo,n     ;    A = evenementchaine[jour]
+         STA     chainJou,s  ;    chainJour = A
+         LDA     tempo,d     ;    A = evenementchaine[jour]
+         SUBA    day,i       ;    A = adresse evenementchaine
 
-         ADDA    hour,i
-         STA     tempo,d
-         LDA     tempo,n
-         STA     chainHeu,s
-         LDA     tempo,d
-         SUBA    hour,i
-
-         ADDA    time,i
-         STA     tempo,d
-         LDA     tempo,n
-         STA     chainDur,s
-         LDA     tempo,d
-         SUBA    time,i
-
-compa1:  LDA     jourComp,s
-         CPA     chainJou,s
-         BRLT    preced
-         CPA     chainJou,s
-         BREQ    compa2
-         BR      suivant
-compa2:  LDA     heurComp,s
-         CPA     chainHeu,s
-         BREQ    conflit
-         CPA     chainHeu,s
-         BRLE    veriMoin
-         BR      veriPlus
-veriMoin:ADDA    dureComp,s
-         CPA     chainHeu,s
-         BRGT    conflit
-         BR      suivant
-veriPlus:LDA     chainHeu,s
-         ADDA    chainDur,s
-         CPA     heurComp,s 
-         BRGT    conflit 
-         BR      suivant
-
-
-preced:  LDA     addObjCh,s
-         ADDA    prec,i         ; A = "objet chaine -> precedent"
-         STA     addObjCh,s
-         LDA     addObjCh,sf ; A = adresse objet chaine precedent
-         CPA     NULL,i
-         BREQ    listPrem 
-         BR      listAutr
-suivant: LDA     addObjCh,s
-         ADDA    suiv,i
-         STA     addObjCh,s
-         LDA     addObjCh,sf
-         CPA     NULL,i
-         BREQ    listFin
-         STA     addObjCh,s
-         BR      loop
+         ADDA    hour,i      ;    A += hour
+         STA     tempo,d     ;    tempo = A
+         LDA     tempo,n     ;    A = evenementchaine[heure]
+         STA     chainHeu,s  ;    chainHeu = A
+         LDA     tempo,d     ;    A = evenementchaine[heure]
+         SUBA    hour,i      ;    A = adresse evenementchaine
+         
+         ADDA    time,i      ;    A += time
+         STA     tempo,d     ;    tempo = A
+         LDA     tempo,n     ;    A = evenementchaine[duree]
+         STA     chainDur,s  ;    chainDur = A
+         LDA     tempo,d     ;    A = evenementchaine[duree]
+         SUBA    time,i      ;    A = adresse evenementchaine
+compa1:  LDA     jourComp,s  ;    A = jourComp
+         CPA     chainJou,s  ;    if ( jourComp < chainJou ) {
+         BRLT    preced      ;        branch "preced"
+         CPA     chainJou,s  ;    } else if ( jourComp == chainJou ) {
+         BREQ    compa2      ;        branch "compa2"
+         BR      suivant     ;    } else { branch "suivant" }
+compa2:  LDA     heurComp,s  ;    A = heurComp
+         CPA     chainHeu,s  ;    if ( heurComp = chainHeu ) {
+         BREQ    conflit     ;        branch "conflit"
+         CPA     chainHeu,s  ;    } else if ( heurComp < chainHeu ) {
+         BRLT    veriMoin    ;        branch "veriMoin"
+         BR      veriPlus    ;    } else { branch "veriPlus" }
+veriMoin:ADDA    dureComp,s  ;    A += dureComp
+         CPA     chainHeu,s  ;    if ( A > chainHeu) {
+         BRGT    conflit     ;        branch "conflit"
+         BR      suivant     ;    } else { branch "suivant" }
+veriPlus:LDA     chainHeu,s  ;    A = chainHeu
+         ADDA    chainDur,s  ;    A += chainDur
+         CPA     heurComp,s  ;    if ( A > heurComp) {
+         BRGT    conflit     ;        branch "conflit"
+         BR      suivant     ;    } else { branch "suivant" }
+preced:  LDA     addObjCh,s  ;    A = adresse addObjCh
+         ADDA    prec,i      ;    A = adresse evenementchain[precedent]
+         STA     addObjCh,s  ;    addObjCh = A
+         LDA     addObjCh,sf ;    A = evenement chaine precedent
+         CPA     NULL,i      ;    if ( A == NULL ) {
+         BREQ    listPrem    ;        branch "listPrem"
+         BR      listAutr    ;    } else { branch "listAutr" }
+suivant: LDA     addObjCh,s  ;    A = addObjCh
+         ADDA    suiv,i      ;    A = adresse evenementchain[suivant]
+         STA     addObjCh,s  ;    addObjCh = A
+         LDA     addObjCh,sf ;    A = evenement chaine suivant
+         CPA     NULL,i      ;    if ( A == NULL ) {
+         BREQ    listFin     ;        branch "listFin"
+         STA     addObjCh,s  ;    } else { addObjCh = A }
+         BR      loop        ;    branch "loop"
 listPrem:LDA     addObjCh,s
          SUBA    prec,i
          STA     addObjCh,s
