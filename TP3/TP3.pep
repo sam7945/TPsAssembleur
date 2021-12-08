@@ -10,9 +10,10 @@
 
          STOP
 
-;Event*
-
-
+;agenda
+;Cette methode permet de prendre en note les évènements d'un agenda
+;par un utilisateur.
+;
 agenda:  CALL    saisir      ;Appel de la fonction saisir
          RET0 
          
@@ -48,7 +49,7 @@ nextEven:CALL    creer       ;    call creer()
 quitMenu:addsp   variable,i  ;    desalocation pile #optMen
          RET0                ;Retourne à agenda et quitte 
 ;Variables Locales
-optMen:  .EQUATE 0           ;#2d
+optMen:  .EQUATE 0           ;#2d option du menu
 variable:.EQUATE 2           
 
 
@@ -90,14 +91,14 @@ fin:     LDA     NULL,i      ;    A = NULL
          STA     prPrec,x    ;    prPrec = A
          LDX     NULL,i      ;    X = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
          RET2                ;    Desallocation pile #eventC 
-eventC:  .EQUATE 0 ; #2h 
-NULL:    .EQUATE 0 ; #2d null
+eventC:  .EQUATE 0           ; #2h 
+NULL:    .EQUATE 0           ; #2d null
 ; ****** Structure event
-prJour:  .EQUATE 0 ; #2d jour de l'évènement
-prDebut: .EQUATE 2 ; #2d heure de début
-prDuree: .EQUATE 4 ; #2d durée
-prSuiv:  .EQUATE 6 ; #2h pointeur vers le suivent
-prPrec:  .EQUATE 8 ; #2h pointeur vers le précédent
+prJour:  .EQUATE 0           ; #2d jour de l'évènement
+prDebut: .EQUATE 2           ; #2d heure de début
+prDuree: .EQUATE 4           ; #2d durée
+prSuiv:  .EQUATE 6           ; #2h pointeur vers le suivent
+prPrec:  .EQUATE 8           ; #2h pointeur vers le précédent
 adrObj:  .EQUATE 10
 
 
@@ -131,7 +132,7 @@ maxJour: .EQUATE 7
 
 ;evenHeur
 ;Cette methode fait la sollicitation de l'Heure/minutes de debut pour la creation d'un evenement.
-;OUT : A = heure/minute
+;OUT : A = le temps en minute
 ;
 evenHeur:STRO    sollHeur,d  ;    Print(sollHeur) 
          SUBSP   resHeure,i  ;    allocation pile #resHeure
@@ -155,7 +156,7 @@ maxHeur: .EQUATE 1440
 
 ;evenDure
 ;Cette methode fait la sollicitation de l'Heure/minutesde duree pour la creation d'un evenement.
-;OUT : A = heure/minute
+;OUT : A = le temps en minute
 ;
 evenDure:STRO    sollDure,d  ;    Print(sollDure)
          SUBSP   resDuree,i  ;    Allocation pile #resDuree
@@ -180,67 +181,68 @@ maxDuree:.EQUATE 1440
 
 ;inserer
 ;Cette methode permet d'insérer un évènement dans la liste chainée d'évènement
-;seulement si celui-ci est conforme. (pas d'erreur de format)
+;seulement si celui-ci est conforme au format demandé.
 ;
 ;IN : X = Adresse de l'évènement a inserer
 ;OUT : A = Evenement insérer. (0 False, 1 True)
-inserer: CPX     NULL,i      ;vérifie si l'évènement est bien conforme (pas d'erreur de format)
-         BREQ    nonConf     ;si non conforme (null), branch fin2
-         LDA     compteur,d  ;else load le compteur dans A
-         ADDA    1,i         ;A += 1
-         STA     compteur,d  ;compteur = A
-         CPA     1,i         ; if (A == 1) {
-         BREQ    premEven    ;    branch fin2 (il n'y a pas d'autres evenements)
-         LDA     debChain,d
-         CALL    comparer    ; } else { compare pour l'insertion }
-nonConf: LDA     0,i
+inserer: CPX     NULL,i      ;    if ( X == NULL ) {
+         BREQ    nonConf     ;        branch "nonConf"
+         LDA     compteur,d  ;    } else { A = compteur
+         ADDA    1,i         ;        A += 1
+         STA     compteur,d  ;        compteur = A
+         CPA     1,i         ;    if (A == 1) {
+         BREQ    premEven    ;        branch "premEven"
+         LDA     debChain,d  ;    } else { A = debChain
+         CALL    comparer    ;        call comparer }
+nonConf: LDA     0,i         ;    A = 0
          RET0
-premEven:STX     debChain,d  ; X = debChain
-         ADDX    evenPr,i    ;adresse eventC + 8 (adresse evenement precedent)
-         LDA     NULL,i      ;A = NULL
-         STA     eventC,x    ;evenement prec = NULL
-         SUBX    evenPr,i
-         ADDX    suivEven,i  ; X = adresse evenement suivant
-         LDA     NULL,i         ; A = NULL
-         STA     eventC,x    ; evenement suivant = NULL
+premEven:STX     debChain,d  ;    X = debChain
+         ADDX    evenPr,i    ;    X += evenPr (adresse evenement precedent)
+         LDA     NULL,i      ;    A = NULL
+         STA     eventC,x    ;    evenement precedent = NULL
+         SUBX    evenPr,i    ;    X = debChain
+         ADDX    suivEven,i  ;    X = adresse evenement suivant
+         LDA     NULL,i      ;    A = NULL
+         STA     eventC,x    ;    evenement suivant = NULL
          RET0
 ;variable locales
-suivEven:.EQUATE 6 
-evenPr:  .EQUATE 8
+suivEven:.EQUATE 6           ; adresse de l'evenement suivant
+evenPr:  .EQUATE 8           ; adresse de l'evenement precedent
 compteur:.WORD   0           ;compteur du nombre d'évènement existant dans la liste chainée
-debChain:.WORD   0
+debChain:.WORD   0           ; Adresse du debut de la liste chaine
 
 
 ;comparer
 ;Cette methode permet de comparer deux objets evenements en commencant
-;au premier evenemnt de la liste chaine.
+;au premier evenement de la liste chaine (ordre chronologique) et fait l'insertion
+;de celui-ci au bon endroit.
 ;
 ;IN : X = Adresse de l'objet Evenement a inserer
 ;     A = Adresse du début de la liste chainée
 ;
 comparer:SUBSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
-         STA     addObjCh,s
-         STX     addNewOb,s
-loop:    ADDX    day,i
-         STX     tempo,d
-         LDX     tempo,n
-         STX     jourComp,s
-         LDX     tempo,d
-         SUBX    day,i
+         STA     addObjCh,s  ;    addObjCh = A
+         STX     addNewOb,s  ;    addNewOb = X
+loop:    ADDX    day,i       ;    X += day
+         STX     tempo,d     ;    tempo = X
+         LDX     tempo,n     ;    X = evenement[jour]
+         STX     jourComp,s  ;    jourComp = X
+         LDX     tempo,d     ;    X = Evenement[jour]
+         SUBX    day,i       ;    X = adresse Evenement
 
-         ADDX    hour,i
-         STX     tempo,d
-         LDX     tempo,n
-         STX     heurComp,s
-         LDX     tempo,d
-         SUBX    hour,i
+         ADDX    hour,i      ;    X += hour
+         STX     tempo,d     ;    tempo = X
+         LDX     tempo,n     ;    X = evenement[heure]
+         STX     heurComp,s  ;    heurComp = X
+         LDX     tempo,d     ;    X = evenement[jour]
+         SUBX    hour,i      ;    X = adresse Evenement
 
-         ADDX    time,i
-         STX     tempo,d
-         LDX     tempo,n
-         STX     dureComp,s
-         LDX     tempo,d
-         SUBX    time,i
+         ADDX    time,i      ;    X += time
+         STX     tempo,d     ;    tempo = X
+         LDX     tempo,n     ;    X = evenement[duree]
+         STX     dureComp,s  ;    dureComp = X
+         LDX     tempo,d     ;    X = evenement[duree]
+         SUBX    time,i      ;    X = adresse Evenement
 
          ADDA    day,i
          STA     tempo,d
@@ -385,19 +387,19 @@ conflit: LDA     NULL,i
          ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
          ;variables locales
+dureComp:.EQUATE 18          ;#2d
+heurComp:.EQUATE 16          ;#2d
+jourComp:.EQUATE 14          ;#2d
+chainDur:.EQUATE 12          ;#2d
+chainHeu:.EQUATE 10          ;#2d
+chainJou:.EQUATE 8           ;#2d
+nextcomp:.EQUATE 6           ;#2d
+addObjCh:.EQUATE 4           ;#2d
+addNewOb:.EQUATE 2           ;#2d
+addTempo:.EQUATE 0           ;#2d
 day:     .EQUATE 0
 hour:    .EQUATE 2
 time:    .EQUATE 4
-dureComp:.EQUATE 18          ;#2d
-heurComp:.EQUATE 16          ;#2d
-jourComp:.EQUATE 14           ;#2d
-chainDur:.EQUATE 12           ;#2d
-chainHeu:.EQUATE 10           ;#2d
-chainJou:.EQUATE 8          ;#2d
-nextcomp:.EQUATE 6          ;#2d
-addObjCh:.EQUATE 4          ;#2d
-addNewOb:.EQUATE 2          ;#2d
-addTempo:.EQUATE 0          ;#2d
 suiv:    .EQUATE 6
 prec:    .EQUATE 8
 newChain:.WORD   0
@@ -549,7 +551,7 @@ menu:    .ASCII  " ****************** "
          .ASCII  "\n * [2]-Quitter    *" 
          .ASCII  "\n ******************\n"
          .ASCII  "Votre choix : \x00"
-errMenu: .ASCII  "Erreur, votre choix doit être 1 ou 2.\x00"
+errMenu: .ASCII  "Erreur, votre choix doit être 1 ou 2.\n\x00"
 sollJour:.ASCII  "Jours : \x00"
 sollHeur:.ASCII  "Heure de début : \x00"
 sollDure:.ASCII  "Durée : \x00"
