@@ -25,7 +25,7 @@ agenda:  CALL    saisir      ;Appel de la fonction saisir
 ;Quitter permet d'arrêter la saisie de nouveau évènements.
 ;
 saisir:  STRO    menu,d      ;    Print( menu )
-         subsp   variable,i  ;    allocation pile #optMen
+         subsp   variable,i  ;    allocation pile #optMen #saveX #saveA 
          lda     0,i
          ldx     0,i
          CHARI   optMen,s    ;    Sollicitation optMen
@@ -37,20 +37,22 @@ cp:      CPX     '\n',i      ;    if (x  == '\n' ) {
          CPX     '2',i       ;    } else if ( x == 2 ) {
          BREQ    quitMenu    ;        branch "quitmenu"
          STRO    errMenu,d   ;    } else {    Print(errMenu)
-         addsp   variable,i  ;        dealocate #optMen
+         addsp   variable,i  ;        dealocate #optMen #saveX #saveA 
          br      saisir      ;        branch "saisir" }
 nextChar:CHARI   0,s         ;    prochain caractere
          LDBYTEX 0,s         ;    X = optMen
          br      cp          ;    branch cp
 nextEven:CALL    creer       ;    call creer()
          CALL    inserer     ;    call inserer() 
-         ADDSP   variable,i  ;    desalocation pile #optMen
+         ADDSP   variable,i  ;    desalocation pile #optMen #saveX #saveA 
          BR      saisir          
-quitMenu:addsp   variable,i  ;    desalocation pile #optMen
+quitMenu:addsp   variable,i  ;    desalocation pile #optMen #saveX #saveA 
          RET0                ;Retourne à agenda et quitte 
 ;Variables Locales
-optMen:  .EQUATE 0           ;#2d option du menu
-variable:.EQUATE 2           
+saveA:   .EQUATE 0           ;#2d
+saveX:   .EQUATE 2           ;#2d
+optMen:  .EQUATE 4          ;#2d option du menu
+variable:.EQUATE 6           
 
 
 ;creer
@@ -64,26 +66,33 @@ creer:   SUBSP   2,i         ;    allocation pile #eventC
          CALL    new         ;    eventC = malloc(10) #prJour #prDebut #prDuree #prSuiv #prPrec
          LDA     0,i 
          STX     eventC,s    ;    eventC = adresse du nouvel objet
+
          CALL    evenJour
+         LDA     4,s
          CPA     NULL,i      ;    if ( A == NULL ) {
          BREQ    fin         ;        branch "fin" }
          STA     prJour,x    ;    eventC[jour] = A
          LDA     0,i
+
          CALL    evenHeur
+         LDA     4,s
          CPA     0,i         ;    if ( A < 0 ) {
          BRLT    fin         ;        branch "fin" }
          CPA     1440,i      ;    } else if ( A > 1440 )
          BRGT    fin         ;        branch "fin" }
          STA     prDebut,x   ;    eventC[debut] = A
          LDA     0,i
+
          CALL    evenDure
+         LDA     4,s
          CPA     NULL,i      ;    if ( A == 0 ) {
          BREQ    fin         ;        branch "fin" }
          STA     prDuree,x   ;    eventC[durée] = A
          LDA     NULL,i      ;    A = NULL
          STA     prSuiv,x    ;    eventC[suivant] = NULL
          STA     prPrec,x    ;    eventC[precedent] = NULL
-         LDX     eventC,s    ;    X = addresse eventC 
+         LDX     eventC,s    ;    X = addresse eventC
+         STX     6,s 
          RET2                ;    Desallocation pile #eventC 
 fin:     LDA     NULL,i      ;    A = NULL
          STA     prJour,x    ;    prJour = A
@@ -92,6 +101,7 @@ fin:     LDA     NULL,i      ;    A = NULL
          STA     prSuiv,x    ;    prSuiv = A
          STA     prPrec,x    ;    prPrec = A
          LDX     NULL,i      ;    X = NULL  (retourne l'adresse NULL puisque l'évènement n'est pas créé)
+         STX     6,s
          RET2                ;    Desallocation pile #eventC 
 eventC:  .EQUATE 0           ; #2h 
 NULL:    .EQUATE 0           ; #2d null
@@ -120,10 +130,12 @@ evenJour:STRO    sollJour,d  ;    Print(sollJour)
          BRLT    errJour     ;        branch "errJour" 
          CPA     maxJour,i   ;    } else if ( A > 7 ) {
          BRGT    errJour     ;        branch "errJour" }
+         STA     8,s
          ADDSP   resJour,i   ;    desalocation pile #resJour
          RET0
 errJour: STRO    errForma,d  ;    Print(errForma)
          LDA     NULL,i      ;    A = NULL
+         STA     8,s
          ADDSP   resJour,i   ;    desallocation pile #resJour
          RET0
 ;variables locales
@@ -144,9 +156,11 @@ evenHeur:STRO    sollHeur,d  ;    Print(sollHeur)
          BRLT    errHeure    ;        branch "errHeure"
          CPA     maxHeur,i   ;    } else if ( A > 1440 ) {
          BRGT    errHeure    ;        branch "errHeure" }
+         STA     8,s
          ADDSP   resHeure,i  ;    Desallocation pile #resHeure
          RET0
 errHeure:STRO    errForma,d  ;    Print(errForma)
+         STA     8,s
          ADDSP   resHeure,i  ;    Desallocation pile #resHeure
          RET0
 ;variable locale
@@ -167,6 +181,7 @@ evenDure:STRO    sollDure,d  ;    Print(sollDure)
          BRLT    errDuree    ;        branch "errDuree"
          CPA     maxDuree,i  ;    } else if ( A > 1440 ) {
          BRGT    errDuree    ;        branch "errDuree"
+         STA     8,s
          ADDSP   resDuree,i  ;    Desallocation pile #resDuree
          RET0
 errDuree:STRO    errForma,d  ;    Print(errForma)
@@ -186,7 +201,8 @@ maxDuree:.EQUATE 1440
 ;
 ;IN : X = Adresse de l'évènement a inserer
 ;OUT : A = Evenement insérer. (0 False, 1 True)
-inserer: CPX     NULL,i      ;    if ( X == NULL ) {
+inserer: LDX     4,s
+         CPX     NULL,i      ;    if ( X == NULL ) {
          BREQ    nonConf     ;        branch "nonConf"
          LDA     compteur,d  ;    } else { A = compteur
          ADDA    1,i         ;        A += 1
@@ -196,6 +212,7 @@ inserer: CPX     NULL,i      ;    if ( X == NULL ) {
          LDA     debChain,d  ;    } else { A = debChain
          CALL    comparer    ;        call comparer }
 nonConf: LDA     0,i         ;    A = 0
+         STA     2,s
          RET0
 premEven:STX     debChain,d  ;    X = debChain
          ADDX    evenPr,i    ;    X += evenPr (adresse evenement precedent)
@@ -205,6 +222,8 @@ premEven:STX     debChain,d  ;    X = debChain
          ADDX    suivEven,i  ;    X = adresse evenement suivant
          LDA     NULL,i      ;    A = NULL
          STA     eventC,x    ;    evenement suivant = NULL
+         LDA     1,i
+         STA     2,s
          RET0
 ;variable locales
 suivEven:.EQUATE 6           ; adresse de l'evenement suivant
@@ -219,9 +238,10 @@ debChain:.WORD   0           ; Adresse du debut de la liste chaine
 ;de celui-ci au bon endroit.
 ;
 ;IN : X = Adresse de l'objet Evenement a inserer
-;     A = Adresse du début de la liste chainée
+;     A = Adresse du début de la liste chainée (debChain)
 ;
 comparer:SUBSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
+         LDX     26,s    
          STA     addObjCh,s  ;    addObjCh = A
          STX     addNewOb,s  ;    addNewOb = X
 loop:    ADDX    day,i       ;    X += day
