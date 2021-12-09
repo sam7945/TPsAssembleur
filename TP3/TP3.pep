@@ -59,7 +59,7 @@ variable:.EQUATE 6
 ;Cette methode permet de saisir les donnees sur un nouvel evenement soit
 ;le jour, l'heure et la duree. Si les donnees sont conformes, l'objet est
 ;cree.
-;OUT: X = adresse d'un maillon evenement
+;OUT: saveX = adresse d'un maillon evenement
 ;
 creer:   SUBSP   2,i         ;    allocation pile #eventC 
          LDA     adrObj,i    ;    A = adrObj 
@@ -120,7 +120,7 @@ adrObj:  .EQUATE 10
 
 ;evenJour
 ;Cette methode fait la sollicitation du Jour pour la creation d'un evenement.
-;OUT : A = jour
+;OUT : saveA = jour
 ;
 evenJour:STRO    sollJour,d  ;    Print(sollJour)
          SUBSP   resJour,i   ;    allocation pile #resJour 
@@ -146,7 +146,7 @@ maxJour: .EQUATE 7
 
 ;evenHeur
 ;Cette methode fait la sollicitation de l'Heure/minutes de debut pour la creation d'un evenement.
-;OUT : A = le temps en minute
+;OUT : saveA = le temps en minute
 ;
 evenHeur:STRO    sollHeur,d  ;    Print(sollHeur) 
          SUBSP   resHeure,i  ;    allocation pile #resHeure
@@ -171,7 +171,7 @@ maxHeur: .EQUATE 1440
 
 ;evenDure
 ;Cette methode fait la sollicitation de l'Heure/minutesde duree pour la creation d'un evenement.
-;OUT : A = le temps en minute
+;OUT : saveA = le temps en minute
 ;
 evenDure:STRO    sollDure,d  ;    Print(sollDure)
          SUBSP   resDuree,i  ;    Allocation pile #resDuree
@@ -199,8 +199,8 @@ maxDuree:.EQUATE 1440
 ;Cette methode permet d'insérer un évènement dans la liste chainée d'évènement
 ;seulement si celui-ci est conforme au format demandé.
 ;
-;IN : X = Adresse de l'évènement a inserer
-;OUT : A = Evenement insérer. (0 False, 1 True)
+;IN : saveX = Adresse de l'évènement a inserer
+;OUT : saveA = Evenement insérer. (0 False, 1 True)
 inserer: LDX     4,s
          CPX     NULL,i      ;    if ( X == NULL ) {
          BREQ    nonConf     ;        branch "nonConf"
@@ -237,7 +237,7 @@ debChain:.WORD   0           ; Adresse du debut de la liste chaine
 ;au premier evenement de la liste chaine (ordre chronologique) et fait l'insertion
 ;de celui-ci au bon endroit.
 ;
-;IN : X = Adresse de l'objet Evenement a inserer
+;IN : saveX = Adresse de l'objet Evenement a inserer
 ;     A = Adresse du début de la liste chainée (debChain)
 ;
 comparer:SUBSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
