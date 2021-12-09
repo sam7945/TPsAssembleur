@@ -237,10 +237,10 @@ debChain:.WORD   0           ; Adresse du debut de la liste chaine
 ;de celui-ci au bon endroit.
 ;
 ;IN : saveX = Adresse de l'objet Evenement a inserer
-;     A = Adresse du début de la liste chainée (debChain)
 ;
 comparer:SUBSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          LDX     26,s        ;    X = saveX
+         LDA     debChain,d  ;
          STA     addObjCh,s  ;    addObjCh = A
          STX     addNewOb,s  ;    addNewOb = X
 loop:    ADDX    day,i       ;    X += day
@@ -320,87 +320,81 @@ suivant: LDA     addObjCh,s  ;    A = addObjCh
          BREQ    listFin     ;        branch "listFin"
          STA     addObjCh,s  ;    } else { addObjCh = A }
          BR      loop        ;    branch "loop"
-listPrem:LDA     addObjCh,s
-         SUBA    prec,i
-         STA     addObjCh,s
-         LDX     addNewOb,s 
-         ADDX    suiv,i         ; nouvel objet[suivant]
-         STX     addNewOb,s
-         STA     addNewOb,sf  ; "nouvel objet[suivant]" = adresse objet chaine
-         SUBX    suiv,i         ; X = adresse du nouvel objet
-         ADDA    prec,i         ; A = objet chaine -> precedent
-         STA     addObjCh,s  ; addObjCh = A
-         STX     addObjCh,sf  ; "objet chaine[precedent]" = adresse nouvel objet
+listPrem:LDA     addObjCh,s  ;    A = addObjCh
+         SUBA    prec,i      ;    A = A - prec
+         STA     addObjCh,s  ;    addObjCh = A
+         LDX     addNewOb,s  ;    X = addNewOb
+         ADDX    suiv,i      ;    X = X + suiv
+         STX     addNewOb,s  ;    addNewOb = X
+         STA     addNewOb,sf ;    nouvel objet[suivant] = adresse objet chaine
+         SUBX    suiv,i      ;    X = X - suiv
+         ADDA    prec,i      ;    A = A + prec
+         STA     addObjCh,s  ;    addObjCh = A
+         STX     addObjCh,sf ;   objet chaine[precedent] = adresse nouvel objet
          STX     debChain,d
          ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
-listAutr:LDA     addObjCh,s  ;newEvent[suivant]
-         SUBA    prec,i
-         ;ADDA    prec,i 
-         STA     addObjCh,s
-         LDX     addNewOb,s 
-         ADDX    suiv,i         ; nouvel objet[suivant]
-         STX     addNewOb,s
-         STA     addNewOb,sf  ; "nouvel objet[suivant]" = adresse objet chaine suivant
-         SUBX    suiv,i         ; X = adresse du nouvel objet
-         STX     addNewOb,s
-         ;newEvent[precedent]
-         LDX     addNewOb,s
-         ADDX    prec,i
-         STX     addNewOb,s
-         LDA     addObjCh,s
-         ADDA    prec,i
-         STA     addObjCh,s
-         LDA     addObjCh,sf
-         STA     addNewOb,sf  ; "nouvel objet[precedent]" = adresse objet chaine precedent
-         LDA     addObjCh,s
-         SUBA    prec,i
-         STA     addObjCh,s
-         SUBX    prec,i
-         STX     addNewOb,s
-         
-         ;oldEvent[precedent] + oldevent[suivant]
-         LDX     addNewOb,s
-         LDA     addObjCh,s
-         STA     addTempo,s
-         ADDA    prec,i
-         STA     addObjCh,s
-         STX     addObjCh,sf
-         LDA     addNewOb,s
-         ADDA    prec,i
-         STA     addTempo,s
-         LDA     addTempo,sf
-         ADDA    suiv,i
-         STA     addTempo,s
-         LDA     addNewOb,s
-         STA     addTempo,sf
-
+listAutr:LDA     addObjCh,s  ;    A = addObjCh
+         SUBA    prec,i      ;    A = A - prec
+         STA     addObjCh,s  ;    addObjCh = A
+         LDX     addNewOb,s  ;    X = addNewOb
+         ADDX    suiv,i      ;    X += suiv
+         STX     addNewOb,s  ;    addNewOb = X
+         STA     addNewOb,sf ;    nouvel objet[suivant] = adresse objet chaine suivant
+         SUBX    suiv,i      ;    X = X - suiv
+         STX     addNewOb,s  ;    addNewOb = X 
+         ;nouvel objet[precedent]
+         LDX     addNewOb,s  ;    X = addNewOb
+         ADDX    prec,i      ;    X += prec
+         STX     addNewOb,s  ;    addNewOb = X
+         LDA     addObjCh,s  ;    A = addObjCh
+         ADDA    prec,i      ;    A += prec
+         STA     addObjCh,s  ;    addObjCh = A
+         LDA     addObjCh,sf ;    
+         STA     addNewOb,sf ;    nouvel objet[precedent] = adresse objet chaine precedent
+         LDA     addObjCh,s  ;    A = addObjCh
+         SUBA    prec,i      ;    A = A - prec
+         STA     addObjCh,s  ;    addObjCh = A
+         SUBX    prec,i      ;    X = X - prec
+         STX     addNewOb,s  ;    addNewOb = X
+         ;objet suivant[precedent] et objet precedent[suivant]
+         LDX     addNewOb,s  ;    X = addNewOb
+         LDA     addObjCh,s  ;    A = addObjCh
+         STA     addTempo,s  ;    addTempo = A
+         ADDA    prec,i      ;    A += prec
+         STA     addObjCh,s  ;    addObjCh = A
+         STX     addObjCh,sf ;    objet chaine[precedent] = adresse nouvel objet[precedent]
+         LDA     addNewOb,s  ;    A = addNewOb
+         ADDA    prec,i      ;    A += prec
+         STA     addTempo,s  ;    addTempo = A
+         LDA     addTempo,sf ;    A = adresse nouvel objet
+         ADDA    suiv,i      ;    A += suiv
+         STA     addTempo,s  ;    addTempo = A
+         LDA     addNewOb,s  ;    A = addNewOb
+         STA     addTempo,sf ;    addTempo = A
          ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo 
          RET0
-listFin: LDA     addObjCh,s
-         SUBA    suiv,i
-         STA     addObjCh,s
-         ;LDA     NULL,i
-         LDX     addNewOb,s
-         ADDX    prec,i
-         STX     addNewOb,s
-         STA     addNewOb,sf
-         SUBX    prec,i
-         STX     addNewOb,s
+listFin: LDA     addObjCh,s  ;    A = addObjCh
+         SUBA    suiv,i      ;    A = A - suiv
+         STA     addObjCh,s  ;    addObjCh = A
+         LDX     addNewOb,s  ;    X = addNewOb
+         ADDX    prec,i      ;    X += prec
+         STX     addNewOb,s  ;    addNewOb = X
+         STA     addNewOb,sf ;    nouvel objet[precedent] = A
+         SUBX    prec,i      ;    X = X - prec
+         STX     addNewOb,s  ;    addNewOb = X
 
-         LDA     addObjCh,s
-         ADDA    suiv,i
-         STA     addObjCh,s
-         LDX     addNewOb,s
-         STX     addObjCh,sf
-         SUBA    suiv,i
-         STA     addObjCh,s
-
+         LDA     addObjCh,s  ;    A = addObjCh
+         ADDA    suiv,i      ;    A += suiv
+         STA     addObjCh,s  ;    addObjCh = A 
+         LDX     addNewOb,s  ;    X = addNewOb
+         STX     addObjCh,sf ;    objet chaine[suivant] = X
+         SUBA    suiv,i      ;    A = A - suiv
+         STA     addObjCh,s  ;    addObjCh = A
          ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
-
-conflit: LDA     NULL,i
-         STRO    errHorai,d
+conflit: LDA     NULL,i      ;    A = NULL
+         STRO    errHorai,d  ;    Print(errHorai)
          ADDSP   20,i        ; #dureComp #heurComp #jourComp #chainDur #chainHeu #chainJour #nextcomp #addObjCh #addNewOb #addTempo
          RET0
          ;variables locales
@@ -459,22 +453,22 @@ addrSuiv:.EQUATE 6
 ;Cette methode permet d'afficher le jour de l'evenement.
 ;IN : A = adresse de l'evenement.
 ;         
-affiJour:SUBSP   2,i         ; Allocation de la pile #jour1
-         STA     jour1,s     ; Store l'adresse evenement[jour] dans la pile 
-         LDX     jour1,sf    ; X = evenement[jour]
-         CPX     1,i
-         BREQ    lun
-         CPX     2,i
-         BREQ    mar
-         CPX     3,i
-         BREQ    mer
-         CPX     4,i
-         BREQ    jeu
-         CPX     5,i
-         BREQ    ven
-         CPX     6,i
-         BREQ    sam
-         CPX     7,i
+affiJour:SUBSP   2,i         ;    Allocation de la pile #jour1
+         STA     jour1,s     ;    jour1 = A 
+         LDX     jour1,sf    ;    X = jour1
+         CPX     1,i         ;    if ( X = 1 ) {
+         BREQ    lun         ;        branch "lun"
+         CPX     2,i         ;    } else if ( X = 2 ) {
+         BREQ    mar         ;        branch "mar"
+         CPX     3,i         ;    } else if ( X = 3 ) {
+         BREQ    mer         ;        branch "mer"
+         CPX     4,i         ;    } else if ( X = 4 ) {
+         BREQ    jeu         ;        branch "jeu"
+         CPX     5,i         ;    } else if ( X = 5 ) {
+         BREQ    ven         ;        branch "ven"
+         CPX     6,i         ;    } else if ( X = 6 ) {
+         BREQ    sam         ;        branch "sam"
+         CPX     7,i         ;    } else { branch "dim" }
          BREQ    dim
 lun:     STRO    lundi,d
          ADDSP   2,i         ; #jour1
