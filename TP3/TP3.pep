@@ -498,25 +498,25 @@ jour1:   .EQUATE 0           ; #2d
 ;Cette methode permet d'afficher l'heure du debut de l'evenement.
 ;IN : A = adresse de l'evenement.
 ;         
-affiHeur:SUBSP   8,i         ; Allocation de la pile #heure1 #comptr #minute #addeven1
-         STA     addeven1,s
-         ADDA    posHeure,i
-         STA     heure1,s    ; Store l'adresse evenement[heure] dans la pile 
-         LDX     heure1,sf   ; X = evenement[heure]
-         LDA     0,i
-         CPX     60,i
-         BRLT    skip
-loop3:   SUBX    minuHeur,i
-         ADDA    1,i
-skip:    STA     comptr,s
-         CPX     minuHeur,i
-         BRGE    loop3
-         STX     minute,s
-         DECO    comptr,s
-         STRO    h,d
-         DECO    minute,s
-         CHARO   ' ',i 
-         LDA     addeven1,s     
+affiHeur:SUBSP   8,i         ;    Allocation de la pile #heure1 #comptr #minute #addeven1
+         STA     addeven1,s  ;    addeen1 = A
+         ADDA    posHeure,i  ;    A += posHeure
+         STA     heure1,s    ;    heure1 = A
+         LDX     heure1,sf   ;    X = evenement[heure]
+         LDA     0,i         ;    A = 0
+         CPX     60,i        ;    if ( X < 60 ) {
+         BRLT    skip        ;        branch "skip" }
+loop3:   SUBX    minuHeur,i  ;    X = X - minuHeur
+         ADDA    1,i         ;    A += 1
+skip:    STA     comptr,s    ;    Comptr = A
+         CPX     minuHeur,i  ;    if ( X >= minuHeur ) {
+         BRGE    loop3       ;        branch "loop3"
+         STX     minute,s    ;    Minute = X
+         DECO    comptr,s    ;    Print(comptr)
+         STRO    h,d         ;    Print(h)
+         DECO    minute,s    ;    Print(minute)
+         CHARO   ' ',i       ;    Print( )
+         LDA     addeven1,s  ;    A = addeven1   
          ADDSP   8,i         ; #heure1 #comptr #minute #addeven1 
          RET0
 ;Variable Locale
@@ -531,22 +531,22 @@ posHeure:.EQUATE 2
 ;Cette methode permet d'afficher la duree de l'evenement.
 ;IN : A = adresse de l'evenement.
 ;         
-affiDure:SUBSP   6,i         ; Allocation de la pile #duree1 #comptr2 #minute2
-         ADDA    posDuree,i
-         STA     duree1,s    ; Store l'adresse evenement[heure] dans la pile 
-         LDX     duree1,sf   ; X = evenement[heure]
-         LDA     0,i
-         CPX     60,i
-         BRLT    skip1
-loop4:   SUBX    minuHr,i
-         ADDA    1,i
-skip1:   STA     comptr2,s
-         CPX     minuHr,i
-         BRGE    loop4
-         STX     minute2,s
-         DECO    comptr2,s
-         STRO    h,d
-         DECO    minute2,s      
+affiDure:SUBSP   6,i         ;    Allocation de la pile #duree1 #comptr2 #minute2
+         ADDA    posDuree,i  ;    A += posDuree
+         STA     duree1,s    ;    duree1 = A
+         LDX     duree1,sf   ;    X = evenement[heure]
+         LDA     0,i         ;    A = 0
+         CPX     60,i        ;    if ( X < 60 ) {
+         BRLT    skip1       ;        branch "skip1" }
+loop4:   SUBX    minuHr,i    ;    X = X - minuHr
+         ADDA    1,i         ;    A += 1
+skip1:   STA     comptr2,s   ;    comptr2 = A
+         CPX     minuHr,i    ;    if ( X >= minuHr) {
+         BRGE    loop4       ;        branch "loop4" }
+         STX     minute2,s   ;    minute2 = X
+         DECO    comptr2,s   ;    Print(comptr2)
+         STRO    h,d         ;    Print(h)
+         DECO    minute2,s   ;    Print(minute2)
          ADDSP   6,i         ; #heure1 #comptr #minute 
          RET0
 ;Variable Locale
